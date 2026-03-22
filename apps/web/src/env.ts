@@ -10,13 +10,13 @@ import { z } from 'zod'
  * All NEXT_PUBLIC_* vars are baked at build time; changes require a rebuild.
  */
 const envSchema = z.object({
-  NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: z.string().min(1, 'WalletConnect project ID is required'),
+  NEXT_PUBLIC_PRIVY_APP_ID: z.string().min(1, 'Privy app ID is required'),
 
   NEXT_PUBLIC_DEFAULT_CHAIN_ID: z
     .string()
     .transform(Number)
     .pipe(z.number().int().positive())
-    .default('84532' as unknown as number), // Base Sepolia default for dev
+    .default('84532'), // Base Sepolia default for dev
 
   // Set after contract deploy — optional during initial development
   NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS: z
@@ -29,8 +29,8 @@ const envSchema = z.object({
 })
 
 export const env = envSchema.parse({
-  NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID:
-    process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+  NEXT_PUBLIC_PRIVY_APP_ID:
+    process.env.NEXT_PUBLIC_PRIVY_APP_ID,
   NEXT_PUBLIC_DEFAULT_CHAIN_ID:
     process.env.NEXT_PUBLIC_DEFAULT_CHAIN_ID ?? '84532',
   NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS:

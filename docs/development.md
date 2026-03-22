@@ -26,7 +26,7 @@ Copy the environment variable template and fill in your values:
 cp .env.example apps/web/.env.local
 ```
 
-At minimum, set `NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID` to run the frontend locally. All other vars have sensible defaults for development against Base Sepolia.
+At minimum, set `NEXT_PUBLIC_PRIVY_APP_ID` to run the frontend locally. Create a free app at [dashboard.privy.io](https://dashboard.privy.io) to get your app ID. All other vars have sensible defaults for development against Base Sepolia.
 
 Start the development server:
 
@@ -108,7 +108,7 @@ cd infra/docker
 
 # Build the image (supply your env vars)
 docker build \
-  --build-arg NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_id \
+  --build-arg NEXT_PUBLIC_PRIVY_APP_ID=your_id \
   --build-arg NEXT_PUBLIC_DEFAULT_CHAIN_ID=84532 \
   -f Dockerfile.web \
   -t tips-web:local \

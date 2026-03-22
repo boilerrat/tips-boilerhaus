@@ -1,20 +1,24 @@
-import { getDefaultConfig } from '@rainbow-me/rainbowkit'
-import { base, baseSepolia } from 'wagmi/chains'
-import { env } from '@/env'
+import { createConfig } from '@privy-io/wagmi'
+import { base, baseSepolia } from 'viem/chains'
+import { http } from 'wagmi'
 
 /**
- * Wagmi + RainbowKit configuration.
+ * Wagmi configuration for use with Privy.
  *
  * Chains: Base (production) and Base Sepolia (testnet/dev).
  * Base is the primary target — low fees, Coinbase distribution, Superfluid support.
  *
+ * Note: createConfig is imported from @privy-io/wagmi (not wagmi directly)
+ * so that Privy can inject its connector for embedded + external wallets.
+ *
  * Add additional chains here as support is expanded (e.g. Optimism, Arbitrum).
  */
-export const wagmiConfig = getDefaultConfig({
-  appName: 'Boilerhaus Tips',
-  projectId: env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+export const wagmiConfig = createConfig({
   chains: [base, baseSepolia],
-  ssr: true, // Required for Next.js App Router
+  transports: {
+    [base.id]: http(),
+    [baseSepolia.id]: http(),
+  },
 })
 
 /** Convenience: chain objects indexed by chain ID */

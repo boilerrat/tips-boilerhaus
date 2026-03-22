@@ -7,7 +7,7 @@
 #   deploy    — Push image and trigger rollout on VPS (main only)
 #
 # Secrets required (set in GitHub repo Settings → Secrets):
-#   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID
+#   NEXT_PUBLIC_PRIVY_APP_ID
 #   NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS
 #   NEXT_PUBLIC_BASE_RPC_URL
 #   NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL
@@ -112,7 +112,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           # Pass NEXT_PUBLIC_* vars as build args from secrets
           build-args: |
-            NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=${{ secrets.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
+            NEXT_PUBLIC_PRIVY_APP_ID=${{ secrets.NEXT_PUBLIC_PRIVY_APP_ID }}
             NEXT_PUBLIC_DEFAULT_CHAIN_ID=8453
             NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS=${{ secrets.NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS }}
             NEXT_PUBLIC_BASE_RPC_URL=${{ secrets.NEXT_PUBLIC_BASE_RPC_URL }}

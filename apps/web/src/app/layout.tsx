@@ -1,12 +1,12 @@
 'use client'
 
-import type { Metadata } from 'next'
 import { IBM_Plex_Mono, Inter } from 'next/font/google'
-import { RainbowKitProvider, darkTheme } from '@rainbow-me/rainbowkit'
-import { WagmiProvider } from 'wagmi'
+import { PrivyProvider } from '@privy-io/react-auth'
+import { WagmiProvider } from '@privy-io/wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { wagmiConfig } from '@/lib/wagmi'
-import '@rainbow-me/rainbowkit/styles.css'
+import { env } from '@/env'
+import { base, baseSepolia } from '@privy-io/chains'
 import './globals.css'
 
 const inter = Inter({
@@ -29,20 +29,28 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${inter.variable} ${ibmPlexMono.variable}`}>
       <body className="bg-black text-white font-sans antialiased">
-        <WagmiProvider config={wagmiConfig}>
+        <PrivyProvider
+          appId={env.NEXT_PUBLIC_PRIVY_APP_ID}
+          config={{
+            appearance: {
+              theme: 'dark',
+              accentColor: '#ffffff',
+            },
+            defaultChain: base,
+            supportedChains: [base, baseSepolia],
+            embeddedWallets: {
+              ethereum: {
+                createOnLogin: 'users-without-wallets',
+              },
+            },
+          }}
+        >
           <QueryClientProvider client={queryClient}>
-            <RainbowKitProvider
-              theme={darkTheme({
-                accentColor: '#ffffff',
-                accentColorForeground: '#000000',
-                borderRadius: 'small',
-                fontStack: 'system',
-              })}
-            >
+            <WagmiProvider config={wagmiConfig}>
               {children}
-            </RainbowKitProvider>
+            </WagmiProvider>
           </QueryClientProvider>
-        </WagmiProvider>
+        </PrivyProvider>
       </body>
     </html>
   )
