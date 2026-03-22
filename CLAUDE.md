@@ -1,7 +1,7 @@
 # CLAUDE.md — Boilerhaus Tips
 
 You are working on **tips-boilerhaus**, a crypto-native creator funding protocol
-deployed at `tips.boilerhaus.org`. This file is your primary orientation document.
+to be deployed at `tips.boilerhaus.org`. This file is your primary orientation document.
 Read it fully before touching any code.
 
 ---
@@ -194,6 +194,6 @@ Work through these in order unless instructed otherwise.
 
 ## Owner
 
-This project is maintained by **boilerrat** (Boilerhaus). When generating
+This project is maintained by **boiler** (boilerhaus). When generating
 documentation, commit messages, or PR descriptions, default to that identity.
 The repository will live at `github.com/BoilerHAUS/tips-boilerhaus`.
