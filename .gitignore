@@ -1,0 +1,24 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# build outputs
+.next/
+dist/
+out/
+.turbo/
+
+# env files — never commit
+.env
+.env.local
+.env.staging
+.env.production
+
+# misc
+.DS_Store
+*.log
+coverage/
+
+# foundry (contracts)
+cache/
+broadcast/

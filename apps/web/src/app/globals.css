@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-inter: 'Inter', system-ui, sans-serif;
+    --font-ibm-plex-mono: 'IBM Plex Mono', monospace;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-black text-white font-sans;
+  }
+
+  /* Ensure wallet addresses and code always render in mono */
+  .address,
+  code,
+  pre,
+  kbd {
+    @apply font-mono;
+  }
+
+  /* Focus ring — visible but minimal */
+  *:focus-visible {
+    @apply outline outline-2 outline-offset-2 outline-white;
+  }
+}
+
+@layer utilities {
+  /* Truncate an ethereum address to 0x1234...abcd display */
+  .address-truncate {
+    @apply font-mono text-sm tracking-tight;
+  }
+}

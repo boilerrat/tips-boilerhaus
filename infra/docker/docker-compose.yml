@@ -1,0 +1,52 @@
+# ============================================================
+# docker-compose.yml — tips.boilerhaus.org
+#
+# Usage:
+#   Local dev:   docker compose up
+#   Production:  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+#
+# Traefik is expected to be running as an external service on the
+# boilerhaus.org host (managed by Dokploy). This compose file
+# attaches the web container to the shared Traefik network and
+# applies the correct routing labels.
+# ============================================================
+
+version: '3.9'
+
+services:
+  web:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.web
+      args:
+        # NEXT_PUBLIC_* vars are baked at build time.
+        # Provide these in .env or via CI secrets — never hardcode here.
+        NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: ${NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID}
+        NEXT_PUBLIC_DEFAULT_CHAIN_ID: ${NEXT_PUBLIC_DEFAULT_CHAIN_ID:-84532}
+        NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS: ${NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS:-}
+        NEXT_PUBLIC_BASE_RPC_URL: ${NEXT_PUBLIC_BASE_RPC_URL:-}
+        NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL: ${NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL:-}
+    image: tips-web:${GIT_SHA:-dev}
+    restart: unless-stopped
+    networks:
+      - traefik_public  # shared Traefik network on boilerhaus.org host
+    labels:
+      - "traefik.enable=true"
+      # Route tips.boilerhaus.org to this container
+      - "traefik.http.routers.tips-web.rule=Host(`tips.boilerhaus.org`)"
+      - "traefik.http.routers.tips-web.entrypoints=websecure"
+      - "traefik.http.routers.tips-web.tls=true"
+      - "traefik.http.routers.tips-web.tls.certresolver=letsencrypt"
+      - "traefik.http.services.tips-web.loadbalancer.server.port=3000"
+      # Security headers middleware (defined in Traefik static config)
+      - "traefik.http.routers.tips-web.middlewares=security-headers@file"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+networks:
+  traefik_public:
+    external: true  # Must exist on the host — created by Dokploy/Traefik setup

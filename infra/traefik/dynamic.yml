@@ -1,0 +1,47 @@
+# ============================================================
+# traefik/dynamic.yml
+#
+# Traefik dynamic file provider configuration for tips.boilerhaus.org.
+# Drop this into your Traefik file provider directory on the host
+# (typically /etc/traefik/dynamic/ or as configured in Dokploy).
+#
+# This file defines reusable middlewares referenced by the
+# docker-compose labels on the web container.
+# ============================================================
+
+http:
+  middlewares:
+    security-headers:
+      headers:
+        # Prevent clickjacking
+        frameDeny: true
+        # Force HTTPS
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        stsPreload: true
+        # Prevent MIME sniffing
+        contentTypeNosniff: true
+        # XSS protection (legacy browsers)
+        browserXssFilter: true
+        # Referrer policy
+        referrerPolicy: "strict-origin-when-cross-origin"
+        # Content Security Policy
+        # Note: RainbowKit and wagmi require 'unsafe-eval' and specific
+        # connect-src entries for wallet connections. Tighten once
+        # the full wallet integration is stable.
+        customResponseHeaders:
+          Content-Security-Policy: >-
+            default-src 'self';
+            script-src 'self' 'unsafe-eval' 'unsafe-inline';
+            style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+            font-src 'self' https://fonts.gstatic.com;
+            img-src 'self' data: https:;
+            connect-src 'self' https: wss:;
+            frame-ancestors 'none';
+
+    # Redirect www to non-www if ever needed
+    redirect-to-non-www:
+      redirectRegex:
+        regex: "^https://www\\.tips\\.boilerhaus\\.org/(.*)"
+        replacement: "https://tips.boilerhaus.org/${1}"
+        permanent: true

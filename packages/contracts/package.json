@@ -1,0 +1,15 @@
+{
+  "name": "@tips/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "forge build",
+    "test": "forge test -vvv",
+    "deploy:sepolia": "forge script scripts/Deploy.s.sol --rpc-url base_sepolia --broadcast --verify",
+    "deploy:base": "forge script scripts/Deploy.s.sol --rpc-url base --broadcast --verify",
+    "clean": "forge clean"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  }
+}
