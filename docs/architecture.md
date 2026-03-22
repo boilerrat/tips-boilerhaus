@@ -105,3 +105,32 @@ User selects payment mode (tip / subscription / stream)
 ```
 
 No backend server is involved in the payment path. All state lives on-chain.
+
+---
+
+## Creator Metadata JSON Schema
+
+The `metadataIpfsHash` field in the `CreatorRegistry` contract points to a CIDv1 IPFS hash
+resolving to a JSON document conforming to this schema:
+
+```json
+{
+  "displayName": "boilerrat",
+  "bio": "Building onchain.",
+  "avatarUrl": "ipfs://bafybeig.../avatar.png",
+  "websiteUrl": "https://boilerhaus.org",
+  "farcasterHandle": "boilerrat"
+}
+```
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `displayName` | string | yes | Human-readable creator name |
+| `bio` | string | no | Short bio / tagline |
+| `avatarUrl` | string | no | IPFS or HTTPS URL to avatar image |
+| `websiteUrl` | string | no | Creator's website |
+| `farcasterHandle` | string | no | Farcaster username (without @) |
+
+All fields except `displayName` are optional. The contract stores only the IPFS hash —
+it has no opinion about the content. Frontends should validate and gracefully handle
+missing fields.
