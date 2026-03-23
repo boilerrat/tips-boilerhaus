@@ -6,11 +6,16 @@
 'use client'
 
 import { usePrivy } from '@privy-io/react-auth'
-import { useAccount } from 'wagmi'
+import { useAccount, useSwitchChain } from 'wagmi'
+import { baseSepolia } from 'viem/chains'
 
 export function Header() {
   const { ready, authenticated, login, logout } = usePrivy()
   const { address, chain } = useAccount()
+  const { switchChain } = useSwitchChain()
+
+  // TODO: derive target chain from env (baseSepolia for dev, base for prod)
+  const isWrongChain = authenticated && chain && chain.id !== baseSepolia.id
 
   const displayAddress = address
     ? `${address.slice(0, 6)}...${address.slice(-4)}`
@@ -27,7 +32,14 @@ export function Header() {
           {ready && (
             authenticated ? (
               <>
-                {chain && (
+                {isWrongChain ? (
+                  <button
+                    onClick={() => switchChain({ chainId: baseSepolia.id })}
+                    className="px-3 py-1 text-xs border border-red-800 rounded text-red-400 hover:text-red-300 hover:border-red-600 transition-colors"
+                  >
+                    Switch to Base Sepolia
+                  </button>
+                ) : chain && (
                   <span className="text-xs text-zinc-600 font-mono hidden sm:inline">
                     {chain.name}
                   </span>
