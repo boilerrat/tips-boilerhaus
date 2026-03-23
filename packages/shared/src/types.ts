@@ -16,7 +16,7 @@ export interface TipPayment {
   mode: 'tip'
   recipientAddress: `0x${string}`
   amountWei: bigint
-  tokenAddress?: `0x${string}` // undefined = native ETH
+  tokenAddress?: `0x${string}` | undefined // undefined = native ETH
   message?: string // optional on-chain or off-chain message
 }
 
@@ -52,8 +52,8 @@ export type Payment = TipPayment | SubscriptionPayment | StreamPayment
  */
 export interface CreatorProfile {
   address: `0x${string}`
-  ensName?: string
-  metadataIpfsHash?: string // CIDv1
+  ensName?: string | undefined
+  metadataIpfsHash?: string | undefined // CIDv1
   tiers: PaymentTier[]
   active: boolean
 }
@@ -62,6 +62,6 @@ export interface CreatorProfile {
 export interface PaymentTier {
   label: string // e.g. "Coffee", "Supporter", "Patron"
   amountWei: bigint
-  tokenAddress?: `0x${string}` // undefined = native ETH
+  tokenAddress?: `0x${string}` | undefined // undefined = native ETH
   mode: PaymentMode
 }
