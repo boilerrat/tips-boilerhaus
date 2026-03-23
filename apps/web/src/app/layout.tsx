@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { wagmiConfig } from '@/lib/wagmi'
 import { env } from '@/env'
 import { base, baseSepolia } from '@privy-io/chains'
+import { Header } from '@/components/Header'
 import './globals.css'
 
 const inter = Inter({
@@ -36,7 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               theme: 'dark',
               accentColor: '#ffffff',
             },
-            defaultChain: base,
+            defaultChain: baseSepolia,
             supportedChains: [base, baseSepolia],
             embeddedWallets: {
               ethereum: {
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           <QueryClientProvider client={queryClient}>
             <WagmiProvider config={wagmiConfig}>
+              <Header />
               {children}
             </WagmiProvider>
           </QueryClientProvider>

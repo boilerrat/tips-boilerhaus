@@ -13,13 +13,16 @@
   },
   "devDependencies": {
     "@turbo/gen": "^1.13.0",
+    "prettier": "^3.2.0",
     "turbo": "^1.13.0",
-    "typescript": "^5.4.0",
-    "prettier": "^3.2.0"
+    "typescript": "^5.4.0"
   },
   "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=20.0.0",
     "pnpm": ">=9.0.0"
+  },
+  "dependencies": {
+    "@farcaster/mini-app-solana": "^1.1.3"
   }
 }
