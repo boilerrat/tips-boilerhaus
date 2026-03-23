@@ -197,45 +197,34 @@ conditionally rendered:
 Without this guard, the build fails with `WagmiProviderNotFoundError` during
 static export of `/page` and `/_not-found/page`.
 
+#### 4. PostCSS config required for Tailwind in monorepo apps
+
+Next.js does not auto-discover Tailwind without a `postcss.config.js` in the
+app directory. If the file is missing, `@tailwind` directives in `globals.css`
+are passed through as-is — no utility classes are generated and the site renders
+completely unstyled. The fix:
+
+```js
+// apps/web/postcss.config.js
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+}
+```
+
+This is easy to miss because `next dev` may appear to work with cached CSS,
+but production builds and Docker images will have zero styling.
+
 ---
 
-## Current State of the Codebase
+## Roadmap & What's Next
 
-The scaffold is complete. What exists:
+See **[`docs/ROADMAP.md`](docs/ROADMAP.md)** for the full phased plan with checkboxes.
 
-- Full monorepo configuration (Turborepo, pnpm workspaces, tsconfig, Prettier)
-- `apps/web` — Next.js app with wagmi/RainbowKit providers, env validation, Tailwind
-  typography config, root layout, landing page, and `/pay/[recipient]` route stub
-- `packages/shared` — Domain type definitions for all three payment modes
-- `packages/contracts` — Package structure and `foundry.toml` only; no contracts yet
-- `infra/` — Dockerfile, docker-compose, Traefik dynamic config
-- `.github/workflows/ci.yml` — Full CI/CD pipeline
-- `docs/` — Architecture and development documentation
-
-### What Does Not Exist Yet (Immediate Next Steps)
-
-The natural implementation order is:
-
-1. **`CreatorRegistry` contract** (`packages/contracts/src/CreatorRegistry.sol`)
-   Minimal registry mapping addresses to IPFS metadata hashes. Emit events on
-   registration and profile updates. Include Foundry tests.
-
-2. **Contract deployment script** (`packages/contracts/scripts/Deploy.s.sol`)
-   Foundry script for Base Sepolia deploy. Log deployed address to stdout.
-
-3. **Tip payment component** (`apps/web/src/components/payment/TipForm.tsx`)
-   The Phase 1 UI: amount input, token selector (ETH default), send button,
-   transaction status. Wire into `/pay/[recipient]/page.tsx`.
-
-4. **ENS resolution hook** (`apps/web/src/hooks/useResolveRecipient.ts`)
-   Resolves ENS → address and address → ENS display name using viem.
-   Handle both directions cleanly; the `/pay/[recipient]` route receives either.
-
-5. **Creator profile fetch** (`apps/web/src/hooks/useCreatorProfile.ts`)
-   Read from the registry contract once deployed. Gracefully handle
-   unregistered addresses (show raw address, allow tips anyway).
-
-Work through these in order unless instructed otherwise.
+When asked "what next?", read `docs/ROADMAP.md`, find the first unchecked item,
+and work on that. Mark items `[x]` as they are completed, then move to the next.
 
 ---
 

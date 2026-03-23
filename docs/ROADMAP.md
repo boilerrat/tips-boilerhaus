@@ -46,7 +46,7 @@ Last updated: 2026-03-22
 
 - [x] Dockerfile.web — multi-stage build (deps → builder → runner)
 - [x] docker-compose.yml — Traefik labels, health check, network config
-- [ ] **Dokploy deployment** — configure build env vars, verify live at tips.boilerhaus.org
+- [x] **Dokploy deployment** — configure build env vars, verify live at tips.boilerhaus.org
 - [ ] **SSL verification** — confirm Let's Encrypt cert via Traefik
 
 ### Contracts
