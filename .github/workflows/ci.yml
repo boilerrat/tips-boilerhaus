@@ -116,6 +116,7 @@ jobs:
             NEXT_PUBLIC_DEFAULT_CHAIN_ID=8453
             NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS=${{ secrets.NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS }}
             NEXT_PUBLIC_BASE_RPC_URL=${{ secrets.NEXT_PUBLIC_BASE_RPC_URL }}
+            NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL=${{ secrets.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL }}
           # Layer cache via GitHub Actions cache
           cache-from: type=gha
           cache-to: type=gha,mode=max
