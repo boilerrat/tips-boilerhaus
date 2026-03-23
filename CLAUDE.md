@@ -217,6 +217,47 @@ module.exports = {
 This is easy to miss because `next dev` may appear to work with cached CSS,
 but production builds and Docker images will have zero styling.
 
+#### 5. Contract verification on Blockscout requires correct EVM version
+
+Forge's `verify-contract --verifier blockscout` may report `OK` but silently
+fail if the EVM version doesn't match what was used at deploy time. Solc 0.8.24
+defaults to `cancun` in newer forge builds, but older forge versions defaulted
+to `paris`. The deployed CreatorRegistry was compiled with `paris`.
+
+**Diagnosis:** Compare the CBOR metadata hash at the tail of the deployed
+bytecode vs the local build. If the solc version suffix matches
+(`64736f6c63430008180033` = 0.8.24) but the IPFS hash differs, the EVM version
+or compiler settings are wrong.
+
+**Verification command that works with Blockscout:**
+
+```bash
+curl -X POST "https://base-sepolia.blockscout.com/api?module=contract&action=verifysourcecode" \
+  --data-urlencode "contractaddress=<ADDRESS>" \
+  --data-urlencode "sourceCode@<FLATTENED_FILE>" \
+  --data-urlencode "codeformat=solidity-single-file" \
+  --data-urlencode "contractname=<NAME>" \
+  --data-urlencode "compilerversion=v0.8.24+commit.e11b9ed9" \
+  --data-urlencode "optimizationUsed=1" \
+  --data-urlencode "runs=200" \
+  --data-urlencode "constructorArguements=<ABI_ENCODED_ARGS_NO_0x>" \
+  --data-urlencode "evmversion=paris"
+```
+
+Key points:
+- Use `forge flatten` to produce the single-file source.
+- The Blockscout v1 API (`/api?module=contract&action=verifysourcecode`) with
+  `codeformat=solidity-single-file` is more reliable than the v2 standard JSON
+  input endpoint or forge's `--verifier blockscout` flag.
+- The `constructorArguements` field (yes, misspelled — matches Etherscan's API)
+  must be the raw ABI-encoded args without the `0x` prefix. Use
+  `cast abi-encode` to generate them.
+- Read the constructor arg values from the deployed contract:
+  `cast call --rpc-url <RPC> <ADDRESS> 'feeRecipient()(address)'`
+- `evm_version = "paris"` is pinned in `foundry.toml` to keep builds
+  reproducible. If a future contract targets a different EVM version, update
+  the toml and re-verify accordingly.
+
 ---
 
 ## Roadmap & What's Next

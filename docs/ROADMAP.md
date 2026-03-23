@@ -47,14 +47,14 @@ Last updated: 2026-03-22
 - [x] Dockerfile.web — multi-stage build (deps → builder → runner)
 - [x] docker-compose.yml — Traefik labels, health check, network config
 - [x] **Dokploy deployment** — configure build env vars, verify live at tips.boilerhaus.org
-- [ ] **SSL verification** — confirm Let's Encrypt cert via Traefik
+- [x] **SSL verification** — confirm Let's Encrypt cert via Traefik
 
 ### Contracts
 
-- [ ] **`CreatorRegistry.sol`** — minimal registry mapping addresses to IPFS metadata hashes, events on register/update
-- [ ] **Foundry tests** for CreatorRegistry
-- [ ] **`Deploy.s.sol`** — Foundry deployment script for Base Sepolia
-- [ ] **Deploy to Base Sepolia** — get contract address, set `NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS`
+- [x] **`CreatorRegistry.sol`** — minimal registry mapping addresses to IPFS metadata hashes, events on register/update
+- [x] **Foundry tests** for CreatorRegistry
+- [x] **`Deploy.s.sol`** — Foundry deployment script for Base Sepolia
+- [x] **Deploy to Base Sepolia** — contract at `0xd984470D4D1dC129e165a6716d9B20F0A6D72A08`, verified on Blockscout
 
 ### Known Issues
 
