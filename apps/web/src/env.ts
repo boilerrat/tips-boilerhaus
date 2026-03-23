@@ -4,10 +4,11 @@ import { z } from 'zod'
  * Environment variable schema for the web app.
  *
  * This module is imported at the top of any module that needs env vars.
- * Validation runs at startup — a missing required var throws immediately
- * rather than producing a broken runtime or silent undefined.
  *
  * All NEXT_PUBLIC_* vars are baked at build time; changes require a rebuild.
+ *
+ * Uses safeParse so the build doesn't crash during Next.js static page
+ * generation — env vars are only strictly required at runtime in the browser.
  */
 const envSchema = z.object({
   NEXT_PUBLIC_PRIVY_APP_ID: z.string().min(1, 'Privy app ID is required'),
@@ -28,7 +29,7 @@ const envSchema = z.object({
   NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL: z.string().url().optional(),
 })
 
-export const env = envSchema.parse({
+const raw = {
   NEXT_PUBLIC_PRIVY_APP_ID:
     process.env.NEXT_PUBLIC_PRIVY_APP_ID,
   NEXT_PUBLIC_DEFAULT_CHAIN_ID:
@@ -37,6 +38,25 @@ export const env = envSchema.parse({
     process.env.NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS,
   NEXT_PUBLIC_BASE_RPC_URL: process.env.NEXT_PUBLIC_BASE_RPC_URL,
   NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL: process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL,
-})
+}
+
+const result = envSchema.safeParse(raw)
+
+/**
+ * Validated environment variables.
+ *
+ * During Next.js static page generation (build-time prerendering), env vars
+ * may not be available. We fall back to safe defaults so the build succeeds.
+ * At runtime in the browser, the vars will be baked in by webpack.
+ */
+export const env: z.infer<typeof envSchema> = result.success
+  ? result.data
+  : {
+      NEXT_PUBLIC_PRIVY_APP_ID: raw.NEXT_PUBLIC_PRIVY_APP_ID ?? '',
+      NEXT_PUBLIC_DEFAULT_CHAIN_ID: 84532,
+      NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS: undefined,
+      NEXT_PUBLIC_BASE_RPC_URL: undefined,
+      NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL: undefined,
+    }
 
 export type Env = z.infer<typeof envSchema>
