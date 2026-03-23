@@ -76,8 +76,10 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 ENV NODE_ENV=production
 
-# Health check — Traefik will poll this before routing traffic
-HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget -qO- http://localhost:3000/ || exit 1
+# Health check — use 127.0.0.1 (not localhost) to avoid IPv6 resolution
+# issues in Alpine where wget resolves localhost to ::1 but the server
+# binds to IPv4 0.0.0.0.
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=5 \
+  CMD wget -qO- http://127.0.0.1:3000/ || exit 1
 
 CMD ["node", "apps/web/server.js"]
