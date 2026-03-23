@@ -1,5 +1,5 @@
 import { createConfig } from '@privy-io/wagmi'
-import { base, baseSepolia } from 'viem/chains'
+import { base, baseSepolia, mainnet } from 'viem/chains'
 import { http } from 'wagmi'
 
 /**
@@ -8,16 +8,18 @@ import { http } from 'wagmi'
  * Chains: Base (production) and Base Sepolia (testnet/dev).
  * Base is the primary target — low fees, Coinbase distribution, Superfluid support.
  *
+ * Mainnet is included solely for ENS resolution (ENS lives on L1).
+ * It is not a supported transaction chain — only used for read calls.
+ *
  * Note: createConfig is imported from @privy-io/wagmi (not wagmi directly)
  * so that Privy can inject its connector for embedded + external wallets.
- *
- * Add additional chains here as support is expanded (e.g. Optimism, Arbitrum).
  */
 export const wagmiConfig = createConfig({
-  chains: [base, baseSepolia],
+  chains: [base, baseSepolia, mainnet],
   transports: {
     [base.id]: http(),
     [baseSepolia.id]: http(),
+    [mainnet.id]: http(),
   },
 })
 

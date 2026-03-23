@@ -128,22 +128,34 @@ export function TipForm({ recipientAddress, displayName, profile }: TipFormProps
   // Success state
   if (isConfirmed && txHash) {
     return (
-      <div className="space-y-4 text-center">
-        <div className="text-2xl">&#10003;</div>
-        <p className="text-zinc-300">
-          Sent {amount} ETH to {displayName}
-        </p>
+      <div className="space-y-5 text-center py-4 animate-fade-in">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-emerald-950/40 border border-emerald-800/40">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        </div>
+        <div className="space-y-1">
+          <p className="text-white font-semibold text-lg">Tip sent!</p>
+          <p className="text-zinc-400 text-sm">
+            {amount} ETH to {displayName}
+          </p>
+        </div>
         <a
-          href={`https://basescan.org/tx/${txHash}`}
+          href={`https://sepolia.basescan.org/tx/${txHash}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm text-zinc-500 hover:text-zinc-300 underline font-mono"
+          className="inline-flex items-center gap-1.5 text-sm text-zinc-500 hover:text-brand-400 transition-colors font-mono"
         >
           View on Basescan
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
         </a>
         <button
           onClick={handleReset}
-          className="block mx-auto mt-4 px-6 py-2 border border-zinc-700 rounded text-sm text-zinc-400 hover:text-white hover:border-zinc-500 transition-colors"
+          className="btn-secondary block mx-auto mt-2 text-sm"
         >
           Send another tip
         </button>
@@ -155,30 +167,37 @@ export function TipForm({ recipientAddress, displayName, profile }: TipFormProps
     <div className="space-y-5">
       {/* Creator tiers (if registered) */}
       {profile?.tiers && profile.tiers.length > 0 && (
-        <div className="space-y-2">
-          <p className="text-xs text-zinc-500 uppercase tracking-wide">Suggested</p>
+        <div className="space-y-2.5">
+          <p className="label">Suggested</p>
           <div className="grid grid-cols-2 gap-2">
             {profile.tiers
               .filter((t) => t.mode === 'tip' && !t.tokenAddress)
-              .map((tier) => (
-                <button
-                  key={tier.label}
-                  onClick={() => setAmount(formatEther(tier.amountWei))}
-                  className="px-3 py-2 border border-zinc-800 rounded text-sm hover:border-zinc-600 transition-colors text-left"
-                >
-                  <span className="block text-white">{tier.label}</span>
-                  <span className="text-zinc-500 text-xs font-mono">
-                    {formatEther(tier.amountWei)} ETH
-                  </span>
-                </button>
-              ))}
+              .map((tier) => {
+                const isSelected = amount === formatEther(tier.amountWei)
+                return (
+                  <button
+                    key={tier.label}
+                    onClick={() => setAmount(formatEther(tier.amountWei))}
+                    className={`px-4 py-3 border rounded-xl text-left transition-all duration-200 ${
+                      isSelected
+                        ? 'border-brand-400/40 bg-brand-400/[0.06]'
+                        : 'border-zinc-800 hover:border-zinc-600 bg-zinc-900/40'
+                    }`}
+                  >
+                    <span className="block text-sm font-semibold text-white">{tier.label}</span>
+                    <span className="text-zinc-500 text-xs font-mono">
+                      {formatEther(tier.amountWei)} ETH
+                    </span>
+                  </button>
+                )
+              })}
           </div>
         </div>
       )}
 
       {/* Amount input */}
-      <div className="space-y-2">
-        <label htmlFor="tip-amount" className="text-xs text-zinc-500 uppercase tracking-wide">
+      <div className="space-y-2.5">
+        <label htmlFor="tip-amount" className="label">
           Amount (ETH)
         </label>
         <input
@@ -189,26 +208,33 @@ export function TipForm({ recipientAddress, displayName, profile }: TipFormProps
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           disabled={isPending || isConfirming}
-          className="w-full bg-transparent border border-zinc-800 rounded px-4 py-3 text-lg font-mono text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 disabled:opacity-50"
+          className="input-field !text-lg font-mono"
         />
         {/* Preset buttons */}
         <div className="flex gap-2">
-          {PRESETS.map((preset) => (
-            <button
-              key={preset}
-              onClick={() => setAmount(preset)}
-              disabled={isPending || isConfirming}
-              className="flex-1 py-1.5 text-xs font-mono text-zinc-500 border border-zinc-800 rounded hover:border-zinc-600 hover:text-zinc-300 transition-colors disabled:opacity-50"
-            >
-              {preset}
-            </button>
-          ))}
+          {PRESETS.map((preset) => {
+            const isSelected = amount === preset
+            return (
+              <button
+                key={preset}
+                onClick={() => setAmount(preset)}
+                disabled={isPending || isConfirming}
+                className={`flex-1 py-2 text-xs font-mono rounded-lg transition-all duration-200 disabled:opacity-50 ${
+                  isSelected
+                    ? 'text-brand-400 border border-brand-400/30 bg-brand-400/[0.06]'
+                    : 'text-zinc-500 border border-zinc-800 hover:border-zinc-600 hover:text-zinc-300'
+                }`}
+              >
+                {preset}
+              </button>
+            )
+          })}
         </div>
       </div>
 
       {/* Optional message */}
-      <div className="space-y-2">
-        <label htmlFor="tip-message" className="text-xs text-zinc-500 uppercase tracking-wide">
+      <div className="space-y-2.5">
+        <label htmlFor="tip-message" className="label">
           Message (optional)
         </label>
         <input
@@ -219,7 +245,7 @@ export function TipForm({ recipientAddress, displayName, profile }: TipFormProps
           onChange={(e) => setMessage(e.target.value)}
           disabled={isPending || isConfirming}
           maxLength={280}
-          className="w-full bg-transparent border border-zinc-800 rounded px-4 py-2 text-sm text-white placeholder:text-zinc-700 focus:outline-none focus:border-zinc-600 disabled:opacity-50"
+          className="input-field !text-sm"
         />
       </div>
 
@@ -232,11 +258,14 @@ export function TipForm({ recipientAddress, displayName, profile }: TipFormProps
 
       {/* Send button */}
       {!ready ? (
-        <div className="text-center text-zinc-600 text-sm py-3">Loading...</div>
+        <div className="flex items-center justify-center gap-2 py-3">
+          <div className="w-4 h-4 border-2 border-zinc-700 border-t-brand-400 rounded-full animate-spin" />
+          <span className="text-zinc-600 text-sm">Loading...</span>
+        </div>
       ) : !authenticated ? (
         <button
           onClick={login}
-          className="w-full py-3 bg-white text-black font-semibold rounded hover:bg-zinc-200 transition-colors"
+          className="btn-primary w-full"
         >
           Connect to send tip
         </button>
@@ -244,34 +273,59 @@ export function TipForm({ recipientAddress, displayName, profile }: TipFormProps
         <button
           onClick={handleSend}
           disabled={!parsedAmount || !hasEnoughBalance || isPending || isConfirming}
-          className="w-full py-3 bg-white text-black font-semibold rounded hover:bg-zinc-200 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          className="btn-primary w-full"
         >
-          {isPending
-            ? 'Confirm in wallet...'
-            : isConfirming
-              ? 'Confirming...'
-              : !parsedAmount
-                ? 'Enter an amount'
-                : !hasEnoughBalance
-                  ? 'Insufficient balance'
-                  : `Send ${amount} ETH`}
+          {isPending ? (
+            <span className="inline-flex items-center gap-2">
+              <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+              Confirm in wallet...
+            </span>
+          ) : isConfirming ? (
+            <span className="inline-flex items-center gap-2">
+              <span className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+              Confirming...
+            </span>
+          ) : !parsedAmount ? (
+            'Enter an amount'
+          ) : !hasEnoughBalance ? (
+            'Insufficient balance'
+          ) : (
+            `Send ${amount} ETH`
+          )}
         </button>
       )}
 
       {/* Error display */}
       {sendError && (
-        <p className="text-red-400 text-xs font-mono break-all">
-          {sendError.message.length > 200
-            ? sendError.message.slice(0, 200) + '...'
-            : sendError.message}
-        </p>
+        <div className="flex items-start gap-2 p-3 rounded-xl bg-red-950/20 border border-red-900/30">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-red-400 shrink-0 mt-0.5">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <p className="text-red-400 text-xs font-mono break-all">
+            {sendError.message.length > 200
+              ? sendError.message.slice(0, 200) + '...'
+              : sendError.message}
+          </p>
+        </div>
       )}
 
       {/* Confirming indicator */}
-      {isConfirming && (
-        <p className="text-zinc-500 text-xs text-center font-mono">
-          Waiting for confirmation...
-        </p>
+      {isConfirming && txHash && (
+        <div className="text-center space-y-1">
+          <p className="text-zinc-500 text-xs font-mono">
+            Waiting for confirmation...
+          </p>
+          <a
+            href={`https://sepolia.basescan.org/tx/${txHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-zinc-600 text-xs font-mono hover:text-brand-400 transition-colors"
+          >
+            Track on Basescan
+          </a>
+        </div>
       )}
     </div>
   )

@@ -22,9 +22,13 @@ export function Header() {
     : null
 
   return (
-    <header className="border-b border-zinc-900 px-4 py-3">
+    <header className="sticky top-0 z-50 border-b border-zinc-900/80 bg-black/80 backdrop-blur-md px-4 py-3">
       <div className="max-w-4xl mx-auto flex items-center justify-between">
-        <a href="/" className="text-sm font-bold font-mono hover:text-zinc-300 transition-colors">
+        <a
+          href="/"
+          className="flex items-center gap-2 text-sm font-bold font-mono hover:text-brand-400 transition-colors duration-200"
+        >
+          <span className="inline-block w-2 h-2 rounded-full bg-brand-400" />
           boilerhaus tips
         </a>
 
@@ -35,23 +39,24 @@ export function Header() {
                 {isWrongChain ? (
                   <button
                     onClick={() => switchChain({ chainId: baseSepolia.id })}
-                    className="px-3 py-1 text-xs border border-red-800 rounded text-red-400 hover:text-red-300 hover:border-red-600 transition-colors"
+                    className="px-3 py-1.5 text-xs border border-red-800/60 rounded-lg text-red-400 hover:text-red-300 hover:border-red-600 hover:bg-red-950/30 transition-all duration-200"
                   >
                     Switch to Base Sepolia
                   </button>
                 ) : chain && (
-                  <span className="text-xs text-zinc-600 font-mono hidden sm:inline">
+                  <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-zinc-600 font-mono">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/60" />
                     {chain.name}
                   </span>
                 )}
                 {displayAddress && (
-                  <span className="text-xs text-zinc-400 font-mono">
+                  <span className="px-2.5 py-1 text-xs text-zinc-400 font-mono bg-zinc-900/60 rounded-lg border border-zinc-800/60">
                     {displayAddress}
                   </span>
                 )}
                 <button
                   onClick={logout}
-                  className="px-3 py-1 text-xs border border-zinc-800 rounded text-zinc-500 hover:text-white hover:border-zinc-600 transition-colors"
+                  className="px-3 py-1.5 text-xs border border-zinc-800 rounded-lg text-zinc-500 hover:text-white hover:border-zinc-600 hover:bg-zinc-900/60 transition-all duration-200"
                 >
                   Disconnect
                 </button>
@@ -59,7 +64,7 @@ export function Header() {
             ) : (
               <button
                 onClick={login}
-                className="px-3 py-1 text-xs bg-white text-black font-semibold rounded hover:bg-zinc-200 transition-colors"
+                className="btn-primary !py-1.5 !px-4 !text-xs !rounded-lg"
               >
                 Connect
               </button>

@@ -15,6 +15,7 @@
   html {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
   }
 
   body {
@@ -31,7 +32,49 @@
 
   /* Focus ring — visible but minimal */
   *:focus-visible {
-    @apply outline outline-2 outline-offset-2 outline-white;
+    @apply outline outline-2 outline-offset-2 outline-brand-400/60;
+  }
+}
+
+@layer components {
+  /* Glass-morphism card */
+  .card-glass {
+    @apply bg-zinc-900/60 backdrop-blur-sm border border-zinc-800/80 rounded-2xl;
+  }
+
+  /* Elevated card with subtle glow */
+  .card-elevated {
+    @apply bg-zinc-900/80 border border-zinc-800 rounded-2xl shadow-lg shadow-black/40;
+  }
+
+  /* Primary CTA button */
+  .btn-primary {
+    @apply relative px-6 py-3 bg-brand-400 text-black font-semibold rounded-xl
+           hover:bg-brand-300 active:bg-brand-500
+           transition-all duration-200 ease-out
+           disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-brand-400;
+  }
+
+  /* Secondary / outline button */
+  .btn-secondary {
+    @apply px-4 py-2 border border-zinc-700 rounded-xl text-zinc-400
+           hover:text-white hover:border-zinc-500
+           transition-all duration-200 ease-out
+           disabled:opacity-40 disabled:cursor-not-allowed;
+  }
+
+  /* Text input */
+  .input-field {
+    @apply w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-4 py-3
+           text-white placeholder:text-zinc-600
+           focus:outline-none focus:border-zinc-600 focus:bg-zinc-900/80
+           transition-all duration-200
+           disabled:opacity-50;
+  }
+
+  /* Label */
+  .label {
+    @apply text-xs text-zinc-500 uppercase tracking-wider font-medium;
   }
 }
 
@@ -39,5 +82,16 @@
   /* Truncate an ethereum address to 0x1234...abcd display */
   .address-truncate {
     @apply font-mono text-sm tracking-tight;
+  }
+
+  /* Gradient text */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-brand-300 via-brand-400 to-brand-500;
+  }
+
+  /* Subtle noise texture overlay */
+  .noise-overlay {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    background-repeat: repeat;
   }
 }
