@@ -68,7 +68,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${inter.variable} ${ibmPlexMono.variable}`}>
       <body className="bg-black text-white font-sans antialiased">
         <Providers>
-          <Header />
+          {/* Header uses wagmi/Privy hooks — only render when providers are mounted */}
+          {env.NEXT_PUBLIC_PRIVY_APP_ID && <Header />}
           {children}
         </Providers>
       </body>
