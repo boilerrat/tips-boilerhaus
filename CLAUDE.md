@@ -142,13 +142,60 @@ for which vars the app requires. If you add a new env var:
 ## Infrastructure Context
 
 The app runs on an OVH VPS at `boilerhaus.org` managed by Dokploy with Traefik
-as the reverse proxy. The `traefik_public` Docker network is external and must
-exist on the host before `docker compose up` will work. SSL is handled by
-Traefik via Let's Encrypt — do not manage certs manually.
+as the reverse proxy. Dokploy builds images directly from the GitHub repo —
+it clones the repo and runs `docker build` using `infra/docker/Dockerfile.web`.
+SSL is handled by Traefik via Let's Encrypt — do not manage certs manually.
 
-Deployment is SSH-based from CI. The deploy job in `.github/workflows/ci.yml`
-pulls the new image by Git SHA and restarts the service. Rollback is done by
-restarting the previous SHA tag.
+The CI pipeline in `.github/workflows/ci.yml` also builds and pushes to GHCR,
+but the production deploy is triggered from Dokploy, not CI. The CI deploy job
+requires an `environment: production` with SSH secrets (`VPS_HOST`, `VPS_USER`,
+`VPS_SSH_KEY`) — these are not currently configured since Dokploy handles deployment.
+
+### Deployment Pitfalls — Lessons Learned
+
+The following issues caused persistent **Bad Gateway** errors after initial deployment.
+All three must be correct for the container to pass health checks and serve traffic.
+
+#### 1. Standalone output paths in a pnpm monorepo
+
+When `outputFileTracingRoot` in `next.config.js` points to the monorepo root
+(two levels up), Next.js standalone output mirrors the full directory structure.
+The server entrypoint lands at `apps/web/server.js` inside the standalone folder,
+**not** at the root. All Dockerfile COPY and CMD paths must account for this:
+
+```dockerfile
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
+COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
+CMD ["node", "apps/web/server.js"]
+```
+
+#### 2. Health check must use 127.0.0.1, not localhost
+
+Alpine's busybox `wget` resolves `localhost` to `::1` (IPv6), but the Next.js
+standalone server binds to `0.0.0.0` (IPv4 only). This causes the health check
+to get "Connection refused", Docker marks the container unhealthy, Swarm kills
+and restarts it in an infinite crash loop, and Traefik returns Bad Gateway.
+
+```dockerfile
+HEALTHCHECK --interval=10s --timeout=5s --start-period=30s --retries=5 \
+  CMD wget -qO- http://127.0.0.1:3000/ || exit 1
+```
+
+#### 3. Guard client-only providers during static page generation
+
+Components that use wagmi/Privy hooks (e.g. `Header`) cannot render during
+Next.js static page generation when `NEXT_PUBLIC_PRIVY_APP_ID` is empty.
+The `Providers` wrapper in `layout.tsx` already skips mounting providers when
+the app ID is missing, but any component using those hooks must also be
+conditionally rendered:
+
+```tsx
+{env.NEXT_PUBLIC_PRIVY_APP_ID && <Header />}
+```
+
+Without this guard, the build fails with `WagmiProviderNotFoundError` during
+static export of `/page` and `/_not-found/page`.
 
 ---
 
