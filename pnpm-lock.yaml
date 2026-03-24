@@ -27,6 +27,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@coinbase/cbpay-js':
+        specifier: ^2.4.0
+        version: 2.4.0(regenerator-runtime@0.13.11)
       '@privy-io/chains':
         specifier: ^0.1.2
         version: 0.1.2
@@ -42,6 +45,9 @@ importers:
       clsx:
         specifier: ^2.1.0
         version: 2.1.1
+      jose:
+        specifier: ^6.2.2
+        version: 6.2.2
       next:
         specifier: ^14.2.0
         version: 14.2.35(@babel/core@7.29.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -279,6 +285,15 @@ packages:
 
   '@base-org/account@2.4.0':
     resolution: {integrity: sha512-A4Umpi8B9/pqR78D1Yoze4xHyQaujioVRqqO3d6xuDFw9VRtjg6tK3bPlwE0aW+nVH/ntllCpPa2PbI8Rnjcug==}
+
+  '@coinbase/cbpay-js@2.4.0':
+    resolution: {integrity: sha512-7Zy1P6v5CTaBuFYowFmvKJ4KyBngVjsPpLkjSi4DWJhVHMgLIkDUINSloRU0Idgt2rFA/PLIm2gXneR3OoQbrA==}
+    engines: {node: '>= 14'}
+    peerDependencies:
+      regenerator-runtime: ^0.13.9
+    peerDependenciesMeta:
+      regenerator-runtime:
+        optional: true
 
   '@coinbase/cdp-sdk@1.45.0':
     resolution: {integrity: sha512-4fgGOhyN9g/pTDE9NtsKUapwFsubrk9wafz8ltmBqSwWqLZWfWxXkVmzMYYFAf+qeGf/X9JqJtmvDVaHFlXWlw==}
@@ -5981,6 +5996,10 @@ snapshots:
       - use-sync-external-store
       - utf-8-validate
       - zod
+
+  '@coinbase/cbpay-js@2.4.0(regenerator-runtime@0.13.11)':
+    optionalDependencies:
+      regenerator-runtime: 0.13.11
 
   '@coinbase/cdp-sdk@1.45.0(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@6.0.6)':
     dependencies:

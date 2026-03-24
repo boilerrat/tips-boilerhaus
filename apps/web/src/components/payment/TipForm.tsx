@@ -37,6 +37,7 @@ import { usePrivy } from '@privy-io/react-auth'
 import { creatorRegistryAbi, REGISTRY_ADDRESS } from '@/lib/contracts'
 import { getTokensForChain, isNativeToken, type TokenConfig } from '@/lib/tokens'
 import { useTokenMetadata } from '@/hooks/useTokenMetadata'
+import { useCoinbaseOnramp } from '@/hooks/useCoinbaseOnramp'
 import type { CreatorProfile } from '@tips/shared'
 
 interface TipFormProps {
@@ -122,10 +123,24 @@ export function TipForm({ recipientAddress, displayName, profile }: TipFormProps
       : 'https://sepolia.basescan.org'
 
   // --- Balance ---
-  const { data: balance } = useBalance({
+  const { data: balance, refetch: refetchBalance } = useBalance({
     address: senderAddress,
     token: selectedToken.address,
     query: { enabled: !!senderAddress },
+  })
+
+  // --- Coinbase Onramp (fiat-to-crypto funding) ---
+  const {
+    openOnramp,
+    status: onrampStatus,
+    error: onrampError,
+    reset: resetOnramp,
+  } = useCoinbaseOnramp({
+    senderAddress,
+    refetchBalance: async () => {
+      const result = await refetchBalance()
+      return result.data
+    },
   })
 
   // --- Amount parsing (token-aware decimals) ---
@@ -288,7 +303,8 @@ export function TipForm({ recipientAddress, displayName, profile }: TipFormProps
     resetContract()
     resetDirect()
     resetApprove()
-  }, [resetContract, resetDirect, resetApprove])
+    resetOnramp()
+  }, [resetContract, resetDirect, resetApprove, resetOnramp])
 
   // --- Render ---
 
@@ -576,6 +592,64 @@ export function TipForm({ recipientAddress, displayName, profile }: TipFormProps
           )}{' '}
           {selectedToken.symbol}
         </p>
+      )}
+
+      {/* Add Funds via Coinbase Onramp — shown when balance is insufficient */}
+      {authenticated && parsedAmount && !hasEnoughBalance && onrampStatus !== 'success' && (
+        <div className="space-y-2">
+          <button
+            onClick={openOnramp}
+            disabled={onrampStatus === 'loading' || onrampStatus === 'pending' || onrampStatus === 'polling'}
+            className="w-full py-2.5 px-4 text-sm font-medium rounded-xl border border-blue-500/30 bg-blue-500/[0.08] text-blue-400 hover:bg-blue-500/[0.15] hover:border-blue-500/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {onrampStatus === 'loading' ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-blue-800 border-t-blue-400 rounded-full animate-spin" />
+                Connecting to Coinbase...
+              </span>
+            ) : onrampStatus === 'pending' ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-blue-800 border-t-blue-400 rounded-full animate-spin" />
+                Purchase in progress...
+              </span>
+            ) : onrampStatus === 'polling' ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="w-4 h-4 border-2 border-blue-800 border-t-blue-400 rounded-full animate-spin" />
+                Waiting for USDC to arrive...
+              </span>
+            ) : (
+              <>
+                <span className="inline-flex items-center gap-1.5">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2" />
+                    <line x1="1" y1="10" x2="23" y2="10" />
+                  </svg>
+                  Buy USDC with card
+                </span>
+                <span className="block text-blue-500/60 text-xs mt-0.5">
+                  Zero fees on Base via Coinbase
+                </span>
+              </>
+            )}
+          </button>
+          {onrampError && (
+            <p className="text-red-400 text-xs font-mono">
+              {onrampError}
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* Onramp success — balance refreshed */}
+      {onrampStatus === 'success' && (
+        <div className="flex items-center gap-2 p-2.5 rounded-xl bg-emerald-950/20 border border-emerald-900/30">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400 shrink-0">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+          <p className="text-emerald-400 text-xs">
+            Funds received! You can now send your tip.
+          </p>
+        </div>
       )}
 
       {/* Approve button — ERC-20 only, when allowance is insufficient */}

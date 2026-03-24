@@ -13,6 +13,8 @@
 #   NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL
 #   NEXT_PUBLIC_PINATA_GATEWAY_URL
 #   PINATA_JWT               — runtime secret, set in Dokploy env (not a build arg)
+#   COINBASE_ONRAMP_API_KEY  — runtime secret, set in Dokploy env (not a build arg)
+#   COINBASE_ONRAMP_API_SECRET — runtime secret, set in Dokploy env (not a build arg)
 #   VPS_HOST         — SSH host for boilerhaus.org VPS
 #   VPS_USER         — SSH user (e.g. boilerrat)
 #   VPS_SSH_KEY      — Private SSH key for deploy user

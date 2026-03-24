@@ -19,6 +19,7 @@ import { useCreatorMetadata } from '@/hooks/useCreatorMetadata'
 import { TipForm } from '@/components/payment/TipForm'
 import { TipHistory } from '@/components/payment/TipHistory'
 import { PaymentModeSelector } from '@/components/payment/PaymentModeSelector'
+import { FundWalletBanner } from '@/components/payment/FundWalletBanner'
 import { ShareButton } from '@/components/ShareButton'
 import { REGISTRY_ADDRESS } from '@/lib/contracts'
 import type { PaymentMode } from '@tips/shared'
@@ -155,6 +156,9 @@ export default function PayPage({ params }: PayPageProps) {
 
         {/* Payment mode selector */}
         <PaymentModeSelector selected={paymentMode} onSelect={setPaymentMode} />
+
+        {/* Empty wallet prompt for first-time users */}
+        <FundWalletBanner />
 
         {/* Payment card */}
         <div className="card-elevated p-6">

@@ -41,6 +41,19 @@ For creator profile features (metadata uploads, avatars), set up Pinata:
 
 `PINATA_JWT` is server-side only (used by the `/api/ipfs/pin` route). `NEXT_PUBLIC_PINATA_GATEWAY_URL` is baked into the client bundle for resolving IPFS content.
 
+For the Coinbase Onramp fiat-to-crypto funding feature:
+
+1. Create a CDP (Coinbase Developer Platform) account at [portal.cdp.coinbase.com](https://portal.cdp.coinbase.com)
+2. Navigate to **API Keys** and create a new key
+3. Copy the **Key Name** (e.g. `organizations/xxx/apiKeys/yyy`) and the **Private Key** (ES256 PEM format)
+4. Add to `.env.local`:
+   ```
+   COINBASE_ONRAMP_API_KEY=organizations/xxx/apiKeys/yyy
+   COINBASE_ONRAMP_API_SECRET="-----BEGIN EC PRIVATE KEY-----\nMHQCAQ...\n-----END EC PRIVATE KEY-----\n"
+   ```
+
+Both are server-side only (used by the `/api/onramp/session` route to generate short-lived session tokens). The PEM key uses literal `\n` for newlines in `.env` files.
+
 Start the development server:
 
 ```bash

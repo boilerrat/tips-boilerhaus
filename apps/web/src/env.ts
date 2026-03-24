@@ -34,6 +34,10 @@ const envSchema = z.object({
     .string()
     .url()
     .optional(), // e.g. https://mygateway.mypinata.cloud
+
+  // Coinbase Onramp — server-side only, for generating session tokens
+  COINBASE_ONRAMP_API_KEY: z.string().min(1).optional(),
+  COINBASE_ONRAMP_API_SECRET: z.string().min(1).optional(),
 })
 
 const raw = {
@@ -47,6 +51,8 @@ const raw = {
   NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL: process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL,
   PINATA_JWT: process.env.PINATA_JWT,
   NEXT_PUBLIC_PINATA_GATEWAY_URL: process.env.NEXT_PUBLIC_PINATA_GATEWAY_URL,
+  COINBASE_ONRAMP_API_KEY: process.env.COINBASE_ONRAMP_API_KEY,
+  COINBASE_ONRAMP_API_SECRET: process.env.COINBASE_ONRAMP_API_SECRET,
 }
 
 const result = envSchema.safeParse(raw)
@@ -68,6 +74,8 @@ export const env: z.infer<typeof envSchema> = result.success
       NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL: undefined,
       PINATA_JWT: undefined,
       NEXT_PUBLIC_PINATA_GATEWAY_URL: undefined,
+      COINBASE_ONRAMP_API_KEY: undefined,
+      COINBASE_ONRAMP_API_SECRET: undefined,
     }
 
 export type Env = z.infer<typeof envSchema>

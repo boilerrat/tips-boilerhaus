@@ -1,6 +1,6 @@
 # Roadmap — tips.boilerhaus.org
 
-Last updated: 2026-03-23
+Last updated: 2026-03-24
 
 ---
 
@@ -105,6 +105,59 @@ _Make the product shareable and usable in the real world._
 - [x] Mobile responsiveness audit
 - [x] Fix Header chain target to derive from `NEXT_PUBLIC_DEFAULT_CHAIN_ID`
 - [x] Custom token support — paste any ERC-20 address, fetch metadata on-chain
+
+---
+
+## Phase 2E: Fiat On-Ramp (Coinbase Onramp)
+
+_Enable non-crypto users to fund their wallets and tip using a bank card.
+Uses Coinbase Onramp (`@coinbase/cbpay-js`) — zero fees for USDC on Base.
+Users go through Coinbase's hosted KYC flow; no PII touches our app._
+
+### Setup
+
+- [x] Create CDP (Coinbase Developer Platform) account at portal.cdp.coinbase.com
+- [x] Obtain Onramp API credentials (Secret API Key for session tokens)
+- [x] Add `COINBASE_ONRAMP_API_KEY` and `COINBASE_ONRAMP_API_SECRET` to env vars (`.env.example`, `env.ts`, CI)
+
+### Backend
+
+- [x] API route (`/api/onramp/session`) — generate Coinbase Onramp session token server-side
+- [x] Validate wallet address param before forwarding to Coinbase
+
+### Frontend
+
+- [x] Install `@coinbase/cbpay-js`
+- [x] `useCoinbaseOnramp` hook — initialize and trigger the Onramp popup
+- [x] "Add Funds" button on `/pay/[recipient]` — shown when sender wallet has insufficient balance
+- [x] Insufficient balance detection — compare wallet balance to tip amount, prompt on-ramp if short
+- [x] Post-purchase balance refresh — poll or listen for balance update after Onramp popup closes
+- [x] Default to USDC on Base in the Onramp widget params
+
+### UX Polish
+
+- [x] Empty wallet first-visit flow — guide new Privy email users through funding before first tip
+- [x] Loading/pending state while Coinbase processes the purchase
+- [x] Error handling for Onramp failures (KYC rejected, payment failed, popup blocked)
+
+---
+
+## Phase 2F: Gas Sponsorship (Coinbase Paymaster) — Deferred
+
+_Sponsor gas fees so users only need USDC, not ETH. Requires migrating from
+EOA wallets to ERC-4337 smart accounts. Deferred until after mainnet launch
+(Phase 5A) since Base gas is already fractions of a cent._
+
+_Prerequisites: Coinbase CDP account, Privy smart wallet configuration,
+paymaster proxy endpoint._
+
+- [ ] Evaluate Privy smart wallet migration path (EOA → smart accounts)
+- [ ] Document address migration plan for existing registered creators
+- [ ] Configure Coinbase Paymaster URL in Privy dashboard
+- [ ] Backend proxy to protect paymaster endpoint from abuse
+- [ ] Set per-user and global sponsorship limits
+- [ ] Test gas-sponsored tip flow end-to-end on Base Sepolia
+- [ ] Apply for Base Gasless Campaign credits ($15K free gas)
 
 ---
 
