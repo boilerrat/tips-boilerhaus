@@ -1,6 +1,6 @@
 # Roadmap — tips.boilerhaus.org
 
-Last updated: 2026-03-22
+Last updated: 2026-03-23
 
 ---
 
@@ -62,55 +62,115 @@ Last updated: 2026-03-22
 
 ---
 
-## Phase 2: Token Support & Creator Profiles
+## Phase 2A: Token Support (COMPLETE)
 
-- [ ] ERC-20 token selector in TipForm (USDC, DAI on Base)
-- [ ] Token approval flow (approve → tip in one UX)
-- [ ] Creator profile page — IPFS metadata display (name, bio, avatar, links)
-- [ ] Creator registration UI — form to register/update profile on-chain
+_ERC-20 payment mechanics — select token, approve, tip._
+
+- [x] ERC-20 token selector in TipForm (USDC, DAI on Base)
+- [x] Token approval flow (approve → tip in one UX)
+
+---
+
+## Phase 2B: Creator Identity
+
+_Complete the creator side so pages have identity beyond a raw address._
+
+- [ ] IPFS pinning service integration (Pinata, web3.storage, or Filebase)
+- [ ] Creator metadata fetch hook (`useCreatorMetadata`) — resolve IPFS hash to JSON
+- [ ] Creator profile display on `/pay/[recipient]` — avatar, name, bio, links
+- [ ] Creator registration UI (`/creator/register`) — upload metadata to IPFS + call `register()`
+- [ ] Creator profile edit UI (`/creator/edit`) — update metadata and tiers via `updateProfile()`
 - [ ] Creator tiers — configurable suggested tip amounts stored in registry
-- [ ] Tip history — index `TipSent` events, show recent tips on creator page
 
 ---
 
-## Phase 3: Subscriptions
+## Phase 2C: Tip History & Creator Dashboard
 
-- [ ] `SubscriptionManager.sol` — recurring pull payments via token allowance
-- [ ] Subscription UI — plan selection, approve allowance, manage active subs
-- [ ] Subscription status display — active/expired/cancelled
-- [ ] Renewal automation — keeper/bot to execute pulls on schedule
-- [ ] Subscriber dashboard — list active subscriptions
+_Give both sides visibility into what has happened._
+
+- [ ] Choose event indexing strategy (direct RPC `getLogs` for MVP, migrate to subgraph later)
+- [ ] `useTipHistory` hook — fetch `TipReceived` events for an address
+- [ ] Tip history display on `/pay/[recipient]` — recent tips with amounts, messages, timestamps
+- [ ] Creator dashboard page (`/creator/dashboard`) — incoming tips, total earned, profile management
 
 ---
 
-## Phase 4: Streaming (Superfluid)
+## Phase 2D: Polish & Shareability
 
-- [ ] Superfluid CFA integration — create/update/delete streams
-- [ ] Stream UI — flow rate selector, real-time balance animation
-- [ ] Stream management — sender can adjust or stop streams
-- [ ] Creator stream dashboard — incoming streams, total flow rate
+_Make the product shareable and usable in the real world._
+
+- [ ] Payment mode selector component (tab UI for tip/subscription/stream — only tip active initially)
+- [ ] OG image generation for `/pay/[recipient]` (dynamic via Next.js `opengraph-image`)
+- [ ] Share button on creator pages (copy link, QR code)
+- [ ] Mobile responsiveness audit
+- [ ] Fix Header chain target to derive from `NEXT_PUBLIC_DEFAULT_CHAIN_ID`
+- [ ] Custom token support — paste any ERC-20 address, fetch metadata on-chain
+
+---
+
+## Phase 3: Streaming (Superfluid)
+
+_Per-second token streams via Superfluid CFA. High wow-factor, lower complexity
+than subscriptions — Superfluid contracts already exist on Base, this is
+primarily a frontend integration._
+
+- [ ] Superfluid SDK integration (`@superfluid-finance/sdk-core`)
+- [ ] Super Token wrapping UI (USDC → USDCx, ETH → ETHx)
+- [ ] Stream creation flow — select flow rate, create CFA via Superfluid Forwarder
+- [ ] Stream management — sender can update rate or cancel
+- [ ] Real-time balance animation (streaming counter)
+- [ ] Creator stream dashboard — incoming streams, aggregate flow rate
 - [ ] Multi-token streams — support for Super Tokens on Base
 
 ---
 
-## Phase 5: Production Hardening
+## Phase 4: Subscriptions
 
-- [ ] Mainnet deployment (Base L2)
-- [ ] Production RPC configuration (Alchemy/Infura)
-- [ ] Analytics — basic usage metrics
+_Recurring pull payments. Highest complexity — requires a new contract, design
+decisions (pull-payment vs Sablier v2), and off-chain keeper automation that
+does not exist in the stack today._
+
+- [ ] Subscription design document (pull-payment vs Sablier, automation strategy, cancellation UX)
+- [ ] `SubscriptionManager.sol` — contract for managing subscription state and pulls
+- [ ] Foundry tests for SubscriptionManager
+- [ ] Deploy SubscriptionManager to Base Sepolia
+- [ ] Subscription UI — plan selection, approve allowance, manage active subs
+- [ ] Renewal automation via Gelato Automate or Chainlink Automation
+- [ ] Subscription status display (active/expired/cancelled)
+- [ ] Subscriber dashboard — list active subscriptions with cancel ability
+
+---
+
+## Phase 5A: Mainnet & Monitoring
+
+_Ship as soon as Phase 2D is complete — these are prerequisites for real usage,
+not "hardening."_
+
+- [ ] Deploy CreatorRegistry to Base mainnet
+- [ ] Production RPC configuration (Alchemy/Infura with proper rate limits)
+- [ ] Error monitoring (Sentry)
+- [ ] Basic analytics (PostHog, Plausible, or similar)
+
+---
+
+## Phase 5B: Hardening
+
 - [ ] Rate limiting on API routes
-- [ ] Error monitoring (Sentry or similar)
-- [ ] SEO — meta tags, OG images for creator pages
-- [ ] Mobile responsiveness audit
 - [ ] Accessibility audit (WCAG AA)
 - [ ] Security audit of smart contracts
+- [ ] Performance audit (bundle size, LCP, CLS)
+- [ ] Frontend test infrastructure (Vitest + Testing Library)
+- [ ] Unit tests for hooks (`useResolveRecipient`, `useCreatorProfile`, `useTipHistory`)
+- [ ] Integration tests for payment flows
 
 ---
 
 ## Infrastructure Backlog
 
-- [ ] GitHub Actions CI — lint, type-check, test on PR
-- [ ] Automated deploy on merge to main
-- [ ] Staging environment (separate subdomain)
+- [x] GitHub Actions CI — lint, type-check, test on PR _(configured in ci.yml)_
+- [x] Automated deploy on merge to main _(configured in ci.yml via Dokploy)_
+- [ ] Staging environment (separate subdomain, Base Sepolia target)
+- [ ] IPFS pinning service account and API key _(prerequisite for Phase 2B)_
+- [ ] Event indexer migration (The Graph or Ponder — when `getLogs` stops scaling)
 - [ ] Database for off-chain data (tip messages, analytics) — if needed
-- [ ] IPFS pinning service for creator metadata
+- [ ] Clean up docs referencing RainbowKit — code uses Privy
