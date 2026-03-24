@@ -95,16 +95,16 @@ _Give both sides visibility into what has happened._
 
 ---
 
-## Phase 2D: Polish & Shareability
+## Phase 2D: Polish & Shareability (COMPLETE)
 
 _Make the product shareable and usable in the real world._
 
-- [ ] Payment mode selector component (tab UI for tip/subscription/stream — only tip active initially)
-- [ ] OG image generation for `/pay/[recipient]` (dynamic via Next.js `opengraph-image`)
-- [ ] Share button on creator pages (copy link, QR code)
-- [ ] Mobile responsiveness audit
-- [ ] Fix Header chain target to derive from `NEXT_PUBLIC_DEFAULT_CHAIN_ID`
-- [ ] Custom token support — paste any ERC-20 address, fetch metadata on-chain
+- [x] Payment mode selector component (tab UI for tip/subscription/stream — only tip active initially)
+- [x] OG image generation for `/pay/[recipient]` (dynamic via Next.js `opengraph-image`)
+- [x] Share button on creator pages (copy link, QR code)
+- [x] Mobile responsiveness audit
+- [x] Fix Header chain target to derive from `NEXT_PUBLIC_DEFAULT_CHAIN_ID`
+- [x] Custom token support — paste any ERC-20 address, fetch metadata on-chain
 
 ---
 

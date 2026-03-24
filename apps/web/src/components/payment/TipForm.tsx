@@ -35,7 +35,8 @@ import {
 } from 'wagmi'
 import { usePrivy } from '@privy-io/react-auth'
 import { creatorRegistryAbi, REGISTRY_ADDRESS } from '@/lib/contracts'
-import { getTokensForChain, isNativeToken } from '@/lib/tokens'
+import { getTokensForChain, isNativeToken, type TokenConfig } from '@/lib/tokens'
+import { useTokenMetadata } from '@/hooks/useTokenMetadata'
 import type { CreatorProfile } from '@tips/shared'
 
 interface TipFormProps {
@@ -55,8 +56,35 @@ export function TipForm({ recipientAddress, displayName, profile }: TipFormProps
   // --- Token selection ---
   const tokens = useMemo(() => getTokensForChain(chainId), [chainId])
   const [selectedTokenIndex, setSelectedTokenIndex] = useState(0)
+  const [isCustomToken, setIsCustomToken] = useState(false)
+  const [customTokenAddress, setCustomTokenAddress] = useState('')
+
+  // Validate and parse the custom token address
+  const parsedCustomAddress = useMemo((): `0x${string}` | undefined => {
+    const trimmed = customTokenAddress.trim()
+    if (/^0x[a-fA-F0-9]{40}$/.test(trimmed)) return trimmed as `0x${string}`
+    return undefined
+  }, [customTokenAddress])
+
+  const { metadata: customTokenMeta, isLoading: isLoadingCustomToken } =
+    useTokenMetadata(isCustomToken ? parsedCustomAddress : undefined)
+
+  // Build the custom token config when metadata is available
+  const customToken: TokenConfig | undefined = useMemo(() => {
+    if (!isCustomToken || !parsedCustomAddress || !customTokenMeta) return undefined
+    return {
+      symbol: customTokenMeta.symbol,
+      name: customTokenMeta.name,
+      decimals: customTokenMeta.decimals,
+      address: parsedCustomAddress,
+      presets: [],
+    }
+  }, [isCustomToken, parsedCustomAddress, customTokenMeta])
+
   // tokens always has at least ETH — getTokensForChain guarantees it
-  const selectedToken = (tokens[selectedTokenIndex] ?? tokens[0])!
+  const selectedToken = isCustomToken && customToken
+    ? customToken
+    : (tokens[selectedTokenIndex] ?? tokens[0])!
   const isEth = isNativeToken(selectedToken)
 
   const [amount, setAmount] = useState('')
@@ -65,16 +93,24 @@ export function TipForm({ recipientAddress, displayName, profile }: TipFormProps
   // Reset selection when chain changes (token list may differ)
   useEffect(() => {
     setSelectedTokenIndex(0)
+    setIsCustomToken(false)
+    setCustomTokenAddress('')
     setAmount('')
   }, [chainId])
 
   const handleTokenChange = useCallback(
     (index: number) => {
       setSelectedTokenIndex(index)
+      setIsCustomToken(false)
       setAmount('')
     },
     [],
   )
+
+  const handleCustomTokenSelect = useCallback(() => {
+    setIsCustomToken(true)
+    setAmount('')
+  }, [])
 
   // ERC-20 tokens require the registry contract for transferFrom
   const canUseToken = isEth || !!REGISTRY_ADDRESS
@@ -351,37 +387,84 @@ export function TipForm({ recipientAddress, displayName, profile }: TipFormProps
 
   return (
     <div className="space-y-5">
-      {/* Token selector — only shown when multiple tokens available */}
-      {tokens.length > 1 && (
-        <div className="space-y-2.5">
-          <p className="label">Token</p>
-          <div className="flex gap-2">
-            {tokens.map((token, i) => {
-              const isSelected = i === selectedTokenIndex
-              const disabled = !isNativeToken(token) && !REGISTRY_ADDRESS
-              return (
-                <button
-                  key={token.address ?? 'eth'}
-                  onClick={() => handleTokenChange(i)}
-                  disabled={disabled || isBusy}
-                  title={
-                    disabled
-                      ? 'ERC-20 tokens require the registry contract'
-                      : token.name
-                  }
-                  className={`px-4 py-2 text-sm font-mono rounded-lg border transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${
-                    isSelected
-                      ? 'text-brand-400 border-brand-400/30 bg-brand-400/[0.06]'
-                      : 'text-zinc-500 border-zinc-800 hover:border-zinc-600 hover:text-zinc-300'
-                  }`}
-                >
-                  {token.symbol}
-                </button>
-              )
-            })}
-          </div>
+      {/* Token selector */}
+      <div className="space-y-2.5">
+        <p className="label">Token</p>
+        <div className="flex flex-wrap gap-2">
+          {tokens.map((token, i) => {
+            const isSelected = !isCustomToken && i === selectedTokenIndex
+            const disabled = !isNativeToken(token) && !REGISTRY_ADDRESS
+            return (
+              <button
+                key={token.address ?? 'eth'}
+                onClick={() => handleTokenChange(i)}
+                disabled={disabled || isBusy}
+                title={
+                  disabled
+                    ? 'ERC-20 tokens require the registry contract'
+                    : token.name
+                }
+                className={`px-4 py-2 text-sm font-mono rounded-lg border transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${
+                  isSelected
+                    ? 'text-brand-400 border-brand-400/30 bg-brand-400/[0.06]'
+                    : 'text-zinc-500 border-zinc-800 hover:border-zinc-600 hover:text-zinc-300'
+                }`}
+              >
+                {token.symbol}
+              </button>
+            )
+          })}
+          {/* Custom token button */}
+          {REGISTRY_ADDRESS && (
+            <button
+              onClick={handleCustomTokenSelect}
+              disabled={isBusy}
+              className={`px-4 py-2 text-sm font-mono rounded-lg border transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed ${
+                isCustomToken
+                  ? 'text-brand-400 border-brand-400/30 bg-brand-400/[0.06]'
+                  : 'text-zinc-500 border-zinc-800 hover:border-zinc-600 hover:text-zinc-300'
+              }`}
+            >
+              Custom
+            </button>
+          )}
         </div>
-      )}
+
+        {/* Custom token address input */}
+        {isCustomToken && (
+          <div className="space-y-1.5">
+            <input
+              type="text"
+              placeholder="Paste ERC-20 contract address (0x...)"
+              value={customTokenAddress}
+              onChange={(e) => setCustomTokenAddress(e.target.value)}
+              disabled={isBusy}
+              className="input-field !text-xs font-mono"
+            />
+            {parsedCustomAddress && isLoadingCustomToken && (
+              <div className="flex items-center gap-1.5">
+                <div className="w-3 h-3 border-2 border-zinc-700 border-t-brand-400 rounded-full animate-spin" />
+                <span className="text-zinc-500 text-xs">Fetching token info...</span>
+              </div>
+            )}
+            {parsedCustomAddress && !isLoadingCustomToken && customToken && (
+              <p className="text-emerald-400 text-xs font-mono">
+                {customToken.name} ({customToken.symbol}) — {customToken.decimals} decimals
+              </p>
+            )}
+            {parsedCustomAddress && !isLoadingCustomToken && !customToken && (
+              <p className="text-red-400 text-xs">
+                Could not read token metadata. Verify the address is a valid ERC-20 on this chain.
+              </p>
+            )}
+            {customTokenAddress.trim() && !parsedCustomAddress && (
+              <p className="text-zinc-600 text-xs">
+                Enter a valid 0x address (42 characters).
+              </p>
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Creator tiers (if registered) — filtered by selected token */}
       {profile?.tiers &&

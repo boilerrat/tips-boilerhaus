@@ -12,12 +12,16 @@
 
 'use client'
 
+import { useState } from 'react'
 import { useResolveRecipient } from '@/hooks/useResolveRecipient'
 import { useCreatorProfile } from '@/hooks/useCreatorProfile'
 import { useCreatorMetadata } from '@/hooks/useCreatorMetadata'
 import { TipForm } from '@/components/payment/TipForm'
 import { TipHistory } from '@/components/payment/TipHistory'
+import { PaymentModeSelector } from '@/components/payment/PaymentModeSelector'
+import { ShareButton } from '@/components/ShareButton'
 import { REGISTRY_ADDRESS } from '@/lib/contracts'
+import type { PaymentMode } from '@tips/shared'
 
 interface PayPageProps {
   params: {
@@ -60,6 +64,8 @@ export default function PayPage({ params }: PayPageProps) {
   const displayName = metadata?.displayName
     ?? ensName
     ?? (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : decoded)
+
+  const [paymentMode, setPaymentMode] = useState<PaymentMode>('tip')
 
   // Only block on metadata loading when a hash is expected
   const isStillLoading = isLoadingProfile
@@ -142,7 +148,13 @@ export default function PayPage({ params }: PayPageProps) {
               <span className="text-brand-400 text-xs font-medium">Registered creator</span>
             </div>
           )}
+
+          {/* Share */}
+          <ShareButton />
         </div>
+
+        {/* Payment mode selector */}
+        <PaymentModeSelector selected={paymentMode} onSelect={setPaymentMode} />
 
         {/* Payment card */}
         <div className="card-elevated p-6">
