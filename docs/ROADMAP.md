@@ -84,14 +84,14 @@ _Complete the creator side so pages have identity beyond a raw address._
 
 ---
 
-## Phase 2C: Tip History & Creator Dashboard
+## Phase 2C: Tip History & Creator Dashboard (COMPLETE)
 
 _Give both sides visibility into what has happened._
 
-- [ ] Choose event indexing strategy (direct RPC `getLogs` for MVP, migrate to subgraph later)
-- [ ] `useTipHistory` hook — fetch `TipReceived` events for an address
-- [ ] Tip history display on `/pay/[recipient]` — recent tips with amounts, messages, timestamps
-- [ ] Creator dashboard page (`/creator/dashboard`) — incoming tips, total earned, profile management
+- [x] Choose event indexing strategy (direct RPC `getLogs` for MVP, migrate to subgraph later)
+- [x] `useTipHistory` hook — fetch `TipReceived` events for an address
+- [x] Tip history display on `/pay/[recipient]` — recent tips with amounts, messages, timestamps
+- [x] Creator dashboard page (`/creator/dashboard`) — incoming tips, total earned, profile management
 
 ---
 

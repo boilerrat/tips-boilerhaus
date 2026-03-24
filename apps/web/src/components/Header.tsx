@@ -40,12 +40,20 @@ export function Header() {
               <>
                 {/* Creator page links */}
                 {isRegistered ? (
-                  <a
-                    href="/creator/edit"
-                    className="hidden sm:inline-block px-3 py-1.5 text-xs text-zinc-500 hover:text-brand-400 transition-colors duration-200"
-                  >
-                    Edit profile
-                  </a>
+                  <>
+                    <a
+                      href="/creator/dashboard"
+                      className="hidden sm:inline-block px-3 py-1.5 text-xs text-zinc-500 hover:text-brand-400 transition-colors duration-200"
+                    >
+                      Dashboard
+                    </a>
+                    <a
+                      href="/creator/edit"
+                      className="hidden sm:inline-block px-3 py-1.5 text-xs text-zinc-500 hover:text-brand-400 transition-colors duration-200"
+                    >
+                      Edit profile
+                    </a>
+                  </>
                 ) : (
                   <a
                     href="/creator/register"

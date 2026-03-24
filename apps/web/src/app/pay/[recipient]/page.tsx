@@ -16,6 +16,8 @@ import { useResolveRecipient } from '@/hooks/useResolveRecipient'
 import { useCreatorProfile } from '@/hooks/useCreatorProfile'
 import { useCreatorMetadata } from '@/hooks/useCreatorMetadata'
 import { TipForm } from '@/components/payment/TipForm'
+import { TipHistory } from '@/components/payment/TipHistory'
+import { REGISTRY_ADDRESS } from '@/lib/contracts'
 
 interface PayPageProps {
   params: {
@@ -182,6 +184,14 @@ export default function PayPage({ params }: PayPageProps) {
             />
           )}
         </div>
+
+        {/* Recent tips */}
+        {address && REGISTRY_ADDRESS && (
+          <div className="card-elevated p-4">
+            <p className="label mb-3">Recent tips</p>
+            <TipHistory address={address} limit={5} />
+          </div>
+        )}
 
         {/* Footer */}
         <p className="text-zinc-700 text-xs text-center font-mono">
