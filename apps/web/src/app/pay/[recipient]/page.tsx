@@ -14,11 +14,21 @@
 
 import { useResolveRecipient } from '@/hooks/useResolveRecipient'
 import { useCreatorProfile } from '@/hooks/useCreatorProfile'
+import { useCreatorMetadata } from '@/hooks/useCreatorMetadata'
 import { TipForm } from '@/components/payment/TipForm'
 
 interface PayPageProps {
   params: {
     recipient: string
+  }
+}
+
+/** Safely extract hostname from a URL string. Returns null for invalid URLs. */
+function safeHostname(url: string): string | null {
+  try {
+    return new URL(url).hostname
+  } catch {
+    return null
   }
 }
 
@@ -38,9 +48,20 @@ export default function PayPage({ params }: PayPageProps) {
     isLoading: isLoadingProfile,
   } = useCreatorProfile(address)
 
-  // Display name: prefer ENS, fall back to truncated address
-  const displayName = ensName
+  const {
+    metadata,
+    avatarUrl,
+    isLoading: isLoadingMetadata,
+  } = useCreatorMetadata(profile?.metadataIpfsHash)
+
+  // Display name: prefer metadata displayName, then ENS, then truncated address
+  const displayName = metadata?.displayName
+    ?? ensName
     ?? (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : decoded)
+
+  // Only block on metadata loading when a hash is expected
+  const isStillLoading = isLoadingProfile
+    || (!!profile?.metadataIpfsHash && isLoadingMetadata)
 
   return (
     <main className="relative min-h-[calc(100vh-53px)] flex flex-col items-center justify-center px-4 py-12">
@@ -51,17 +72,67 @@ export default function PayPage({ params }: PayPageProps) {
 
       <div className="relative max-w-md w-full space-y-6 animate-fade-in">
         {/* Recipient header */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-3">
           <p className="label">sending to</p>
+
+          {/* Avatar */}
+          {avatarUrl && (
+            <div className="flex justify-center">
+              <img
+                src={avatarUrl}
+                alt={`${displayName} avatar`}
+                className="w-16 h-16 rounded-full object-cover border-2 border-zinc-800"
+              />
+            </div>
+          )}
+
           <h2 className="text-3xl font-bold font-mono break-all leading-tight">
             {displayName}
           </h2>
-          {/* Show raw address below ENS name */}
-          {ensName && address && (
+
+          {/* Show raw address below display name / ENS name */}
+          {(ensName || metadata?.displayName) && address && (
             <p className="text-zinc-600 text-xs font-mono">
               {address.slice(0, 6)}...{address.slice(-4)}
             </p>
           )}
+
+          {/* Bio */}
+          {metadata?.bio && (
+            <p className="text-zinc-400 text-sm max-w-xs mx-auto">
+              {metadata.bio}
+            </p>
+          )}
+
+          {/* Social links */}
+          {(metadata?.websiteUrl || metadata?.farcasterHandle) && (
+            <div className="flex items-center justify-center gap-3 text-xs">
+              {metadata.websiteUrl && (() => {
+                const hostname = safeHostname(metadata.websiteUrl)
+                return hostname ? (
+                  <a
+                    href={metadata.websiteUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-brand-400 hover:text-brand-300 transition-colors"
+                  >
+                    {hostname}
+                  </a>
+                ) : null
+              })()}
+              {metadata.farcasterHandle && (
+                <a
+                  href={`https://warpcast.com/${metadata.farcasterHandle}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-brand-400 hover:text-brand-300 transition-colors"
+                >
+                  @{metadata.farcasterHandle}
+                </a>
+              )}
+            </div>
+          )}
+
           {/* Registration badge */}
           {isRegistered && profile?.active && (
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-brand-400/10 border border-brand-400/20">
@@ -98,7 +169,7 @@ export default function PayPage({ params }: PayPageProps) {
                 Invalid address or ENS name.
               </p>
             </div>
-          ) : isLoadingProfile ? (
+          ) : isStillLoading ? (
             <div className="flex items-center justify-center gap-2 py-8">
               <div className="w-4 h-4 border-2 border-zinc-700 border-t-brand-400 rounded-full animate-spin" />
               <p className="text-zinc-500 text-sm font-mono">Loading profile...</p>

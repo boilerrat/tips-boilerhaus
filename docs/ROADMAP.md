@@ -76,8 +76,8 @@ _ERC-20 payment mechanics — select token, approve, tip._
 _Complete the creator side so pages have identity beyond a raw address._
 
 - [x] IPFS pinning service integration (Pinata via `pinata` SDK)
-- [ ] Creator metadata fetch hook (`useCreatorMetadata`) — resolve IPFS hash to JSON
-- [ ] Creator profile display on `/pay/[recipient]` — avatar, name, bio, links
+- [x] Creator metadata fetch hook (`useCreatorMetadata`) — resolve IPFS hash to JSON
+- [x] Creator profile display on `/pay/[recipient]` — avatar, name, bio, links
 - [ ] Creator registration UI (`/creator/register`) — upload metadata to IPFS + call `register()`
 - [ ] Creator profile edit UI (`/creator/edit`) — update metadata and tiers via `updateProfile()`
 - [ ] Creator tiers — configurable suggested tip amounts stored in registry
