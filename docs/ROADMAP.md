@@ -58,7 +58,7 @@ Last updated: 2026-03-22
 
 ### Known Issues
 
-- [ ] Transaction receipt not reflecting in UI after tip sent (wagmi `useWaitForTransactionReceipt` issue with Privy embedded wallet — on-chain state is fine, UI doesn't flip to success)
+- [x] Transaction receipt not reflecting in UI after tip sent (wagmi `useWaitForTransactionReceipt` issue with Privy embedded wallet — on-chain state is fine, UI doesn't flip to success)
 
 ---
 

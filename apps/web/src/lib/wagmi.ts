@@ -16,6 +16,7 @@ import { http } from 'wagmi'
  */
 export const wagmiConfig = createConfig({
   chains: [base, baseSepolia, mainnet],
+  pollingInterval: 4_000,
   transports: {
     [base.id]: http(),
     [baseSepolia.id]: http(),

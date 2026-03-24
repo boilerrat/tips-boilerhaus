@@ -93,7 +93,16 @@ export function TipForm({ recipientAddress, displayName, profile }: TipFormProps
   const {
     isLoading: isConfirming,
     isSuccess: isConfirmed,
-  } = useWaitForTransactionReceipt({ hash: txHash })
+    error: receiptError,
+  } = useWaitForTransactionReceipt({
+    hash: txHash,
+    confirmations: 1,
+    query: {
+      enabled: !!txHash,
+      retry: 10,
+      retryDelay: 2_000,
+    },
+  })
 
   const handleSend = useCallback(() => {
     if (!parsedAmount || !recipientAddress) return
@@ -125,20 +134,42 @@ export function TipForm({ recipientAddress, displayName, profile }: TipFormProps
 
   // --- Render ---
 
-  // Success state
-  if (isConfirmed && txHash) {
+  // Receipt polling failed but tx was submitted — treat as likely success
+  const receiptLost = !!receiptError && !!txHash
+
+  // Success state (confirmed on-chain or tx sent but receipt polling timed out)
+  if ((isConfirmed || receiptLost) && txHash) {
     return (
       <div className="space-y-5 text-center py-4 animate-fade-in">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-emerald-950/40 border border-emerald-800/40">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400">
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
+        <div className={`inline-flex items-center justify-center w-14 h-14 rounded-full border ${
+          receiptLost
+            ? 'bg-amber-950/40 border-amber-800/40'
+            : 'bg-emerald-950/40 border-emerald-800/40'
+        }`}>
+          {receiptLost ? (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-amber-400">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+              <line x1="12" y1="9" x2="12" y2="13" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+          ) : (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-emerald-400">
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
         </div>
         <div className="space-y-1">
-          <p className="text-white font-semibold text-lg">Tip sent!</p>
+          <p className="text-white font-semibold text-lg">
+            {receiptLost ? 'Tip submitted!' : 'Tip sent!'}
+          </p>
           <p className="text-zinc-400 text-sm">
             {amount} ETH to {displayName}
           </p>
+          {receiptLost && (
+            <p className="text-amber-400/80 text-xs mt-1">
+              Transaction was sent but confirmation timed out. Check the explorer to verify.
+            </p>
+          )}
         </div>
         <a
           href={`https://sepolia.basescan.org/tx/${txHash}`}
