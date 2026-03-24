@@ -58,6 +58,18 @@ export interface CreatorProfile {
   active: boolean
 }
 
+/**
+ * Off-chain creator metadata stored on IPFS.
+ * The CIDv1 hash is recorded on-chain in CreatorRegistry.metadataIpfsHash.
+ */
+export interface CreatorMetadata {
+  displayName: string
+  bio?: string
+  avatarUrl?: string // ipfs:// or https://
+  websiteUrl?: string
+  farcasterHandle?: string // without @
+}
+
 /** A suggested payment tier — amounts are in the token's atomic units. */
 export interface PaymentTier {
   label: string // e.g. "Coffee", "Supporter", "Patron"

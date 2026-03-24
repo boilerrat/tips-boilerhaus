@@ -28,6 +28,19 @@ cp .env.example apps/web/.env.local
 
 At minimum, set `NEXT_PUBLIC_PRIVY_APP_ID` to run the frontend locally. Create a free app at [dashboard.privy.io](https://dashboard.privy.io) to get your app ID. All other vars have sensible defaults for development against Base Sepolia.
 
+For creator profile features (metadata uploads, avatars), set up Pinata:
+
+1. Create a free account at [app.pinata.cloud](https://app.pinata.cloud)
+2. Generate an API key at **Developers → API Keys** and copy the JWT
+3. Note your dedicated gateway URL from **Gateways** (e.g. `https://yourgateway.mypinata.cloud`)
+4. Add to `.env.local`:
+   ```
+   PINATA_JWT=your_jwt_here
+   NEXT_PUBLIC_PINATA_GATEWAY_URL=https://yourgateway.mypinata.cloud
+   ```
+
+`PINATA_JWT` is server-side only (used by the `/api/ipfs/pin` route). `NEXT_PUBLIC_PINATA_GATEWAY_URL` is baked into the client bundle for resolving IPFS content.
+
 Start the development server:
 
 ```bash

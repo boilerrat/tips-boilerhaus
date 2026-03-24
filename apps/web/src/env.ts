@@ -27,6 +27,13 @@ const envSchema = z.object({
 
   NEXT_PUBLIC_BASE_RPC_URL: z.string().url().optional(),
   NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL: z.string().url().optional(),
+
+  // Pinata IPFS pinning — required for creator metadata uploads
+  PINATA_JWT: z.string().min(1).optional(),
+  NEXT_PUBLIC_PINATA_GATEWAY_URL: z
+    .string()
+    .url()
+    .optional(), // e.g. https://mygateway.mypinata.cloud
 })
 
 const raw = {
@@ -38,6 +45,8 @@ const raw = {
     process.env.NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS,
   NEXT_PUBLIC_BASE_RPC_URL: process.env.NEXT_PUBLIC_BASE_RPC_URL,
   NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL: process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL,
+  PINATA_JWT: process.env.PINATA_JWT,
+  NEXT_PUBLIC_PINATA_GATEWAY_URL: process.env.NEXT_PUBLIC_PINATA_GATEWAY_URL,
 }
 
 const result = envSchema.safeParse(raw)
@@ -57,6 +66,8 @@ export const env: z.infer<typeof envSchema> = result.success
       NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS: undefined,
       NEXT_PUBLIC_BASE_RPC_URL: undefined,
       NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL: undefined,
+      PINATA_JWT: undefined,
+      NEXT_PUBLIC_PINATA_GATEWAY_URL: undefined,
     }
 
 export type Env = z.infer<typeof envSchema>

@@ -75,7 +75,7 @@ _ERC-20 payment mechanics — select token, approve, tip._
 
 _Complete the creator side so pages have identity beyond a raw address._
 
-- [ ] IPFS pinning service integration (Pinata, web3.storage, or Filebase)
+- [x] IPFS pinning service integration (Pinata via `pinata` SDK)
 - [ ] Creator metadata fetch hook (`useCreatorMetadata`) — resolve IPFS hash to JSON
 - [ ] Creator profile display on `/pay/[recipient]` — avatar, name, bio, links
 - [ ] Creator registration UI (`/creator/register`) — upload metadata to IPFS + call `register()`
@@ -170,7 +170,7 @@ not "hardening."_
 - [x] GitHub Actions CI — lint, type-check, test on PR _(configured in ci.yml)_
 - [x] Automated deploy on merge to main _(configured in ci.yml via Dokploy)_
 - [ ] Staging environment (separate subdomain, Base Sepolia target)
-- [ ] IPFS pinning service account and API key _(prerequisite for Phase 2B)_
+- [x] IPFS pinning service account and API key _(Pinata — prerequisite for Phase 2B)_
 - [ ] Event indexer migration (The Graph or Ponder — when `getLogs` stops scaling)
 - [ ] Database for off-chain data (tip messages, analytics) — if needed
 - [ ] Clean up docs referencing RainbowKit — code uses Privy

@@ -11,6 +11,8 @@
 #   NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS
 #   NEXT_PUBLIC_BASE_RPC_URL
 #   NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL
+#   NEXT_PUBLIC_PINATA_GATEWAY_URL
+#   PINATA_JWT               — runtime secret, set in Dokploy env (not a build arg)
 #   VPS_HOST         — SSH host for boilerhaus.org VPS
 #   VPS_USER         — SSH user (e.g. boilerrat)
 #   VPS_SSH_KEY      — Private SSH key for deploy user
@@ -122,6 +124,7 @@ jobs:
             NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS=${{ secrets.NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS }}
             NEXT_PUBLIC_BASE_RPC_URL=${{ secrets.NEXT_PUBLIC_BASE_RPC_URL }}
             NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL=${{ secrets.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL }}
+            NEXT_PUBLIC_PINATA_GATEWAY_URL=${{ secrets.NEXT_PUBLIC_PINATA_GATEWAY_URL }}
           # Layer cache via GitHub Actions cache
           cache-from: type=gha
           cache-to: type=gha,mode=max
