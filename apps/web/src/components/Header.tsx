@@ -8,11 +8,13 @@
 import { usePrivy } from '@privy-io/react-auth'
 import { useAccount, useSwitchChain } from 'wagmi'
 import { baseSepolia } from 'viem/chains'
+import { useCreatorProfile } from '@/hooks/useCreatorProfile'
 
 export function Header() {
   const { ready, authenticated, login, logout } = usePrivy()
   const { address, chain } = useAccount()
   const { switchChain } = useSwitchChain()
+  const { isRegistered } = useCreatorProfile(address)
 
   // TODO: derive target chain from env (baseSepolia for dev, base for prod)
   const isWrongChain = authenticated && chain && chain.id !== baseSepolia.id
@@ -36,6 +38,23 @@ export function Header() {
           {ready && (
             authenticated ? (
               <>
+                {/* Creator page links */}
+                {isRegistered ? (
+                  <a
+                    href="/creator/edit"
+                    className="hidden sm:inline-block px-3 py-1.5 text-xs text-zinc-500 hover:text-brand-400 transition-colors duration-200"
+                  >
+                    Edit profile
+                  </a>
+                ) : (
+                  <a
+                    href="/creator/register"
+                    className="hidden sm:inline-block px-3 py-1.5 text-xs text-zinc-500 hover:text-brand-400 transition-colors duration-200"
+                  >
+                    Become a creator
+                  </a>
+                )}
+
                 {isWrongChain ? (
                   <button
                     onClick={() => switchChain({ chainId: baseSepolia.id })}

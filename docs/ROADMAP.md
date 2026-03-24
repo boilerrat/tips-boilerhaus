@@ -78,9 +78,9 @@ _Complete the creator side so pages have identity beyond a raw address._
 - [x] IPFS pinning service integration (Pinata via `pinata` SDK)
 - [x] Creator metadata fetch hook (`useCreatorMetadata`) — resolve IPFS hash to JSON
 - [x] Creator profile display on `/pay/[recipient]` — avatar, name, bio, links
-- [ ] Creator registration UI (`/creator/register`) — upload metadata to IPFS + call `register()`
-- [ ] Creator profile edit UI (`/creator/edit`) — update metadata and tiers via `updateProfile()`
-- [ ] Creator tiers — configurable suggested tip amounts stored in registry
+- [x] Creator registration UI (`/creator/register`) — upload metadata to IPFS + call `register()`
+- [x] Creator profile edit UI (`/creator/edit`) — update metadata and tiers via `updateProfile()`
+- [x] Creator tiers — configurable suggested tip amounts stored in registry
 
 ---
 
