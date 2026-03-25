@@ -184,9 +184,9 @@ _Recurring pull payments. Highest complexity — requires a new contract, design
 decisions (pull-payment vs Sablier v2), and off-chain keeper automation that
 does not exist in the stack today._
 
-- [ ] Subscription design document (pull-payment vs Sablier, automation strategy, cancellation UX)
-- [ ] `SubscriptionManager.sol` — contract for managing subscription state and pulls
-- [ ] Foundry tests for SubscriptionManager
+- [x] Subscription design document (pull-payment vs Sablier, automation strategy, cancellation UX)
+- [x] `SubscriptionManager.sol` — contract for managing subscription state and pulls
+- [x] Foundry tests for SubscriptionManager
 - [ ] Deploy SubscriptionManager to Base Sepolia
 - [ ] Subscription UI — plan selection, approve allowance, manage active subs
 - [ ] Renewal automation via Gelato Automate or Chainlink Automation
