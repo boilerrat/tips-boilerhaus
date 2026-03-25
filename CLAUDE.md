@@ -11,7 +11,7 @@ Read it fully before touching any code.
 A non-custodial creator tipping protocol built on Base. It supports three payment modes:
 
 - **Tip** — one-time ETH or ERC-20 transfer directly to a recipient address
-- **Subscription** — recurring periodic pull against a pre-approved token allowance _(Phase 4 — not yet built)_
+- **Subscription** — recurring periodic pull against a pre-approved token allowance _(Phase 4 — contract + UI complete, keeper automation remaining)_
 - **Stream** — continuous per-second token flow via Superfluid CFA _(Phase 3 — complete)_
 
 No funds are ever custodied by the protocol. All value flows wallet-to-wallet.
@@ -44,11 +44,12 @@ apps/web/                       Next.js 14 frontend (tips.boilerhaus.org)
         CreatorProfileForm.tsx  Shared form for register/edit flows
       payment/
         TipForm.tsx             One-time tip form (ETH + ERC-20)
+        SubscribeForm.tsx       Subscription form (approve allowance + subscribe)
         StreamForm.tsx          Superfluid stream creation/management
         StreamDashboard.tsx     Creator's incoming streams view
         StreamingCounter.tsx    Animated real-time balance ticker
         TipHistory.tsx          Recent tips list (event-indexed)
-        PaymentModeSelector.tsx Tab UI (Tip | Subscribe | Stream)
+        PaymentModeSelector.tsx Tab UI (Tip | Subscribe | Stream) — all enabled
         FundWalletBanner.tsx    Coinbase Onramp prompt for empty wallets
     hooks/
       useResolveRecipient.ts   ENS <-> address resolution (mainnet)
@@ -57,20 +58,23 @@ apps/web/                       Next.js 14 frontend (tips.boilerhaus.org)
       useTipHistory.ts         Fetch TipReceived events via getLogs
       useTokenMetadata.ts      Fetch ERC-20 metadata for custom tokens
       useCoinbaseOnramp.ts     Coinbase Onramp popup flow
+      useSubscription.ts       Subscribe, cancel, allowance, existing sub detection
       useWrapSuperToken.ts     ERC-20 -> Super Token wrapping
       useStreamFlow.ts         Create/update/cancel Superfluid streams
       useStreams.ts             Query Superfluid subgraph for active streams
       useRealtimeBalance.ts    Animated balance with per-second extrapolation
     lib/
       wagmi.ts                 Chain config (Base, Base Sepolia, mainnet for ENS)
-      contracts.ts             CreatorRegistry ABI + address from env
+      contracts.ts             CreatorRegistry + SubscriptionManager ABIs + addresses
       tokens.ts                ERC-20 token configs per chain (USDC, DAI)
       superfluid.ts            Super Token configs, flow rate helpers, subgraph URLs
       ipfs.ts                  CID -> HTTP gateway URL conversion
     env.ts                     Zod-validated environment variables
 packages/contracts/             Solidity contracts — Foundry toolchain
   src/CreatorRegistry.sol       On-chain registry + tip routing
+  src/SubscriptionManager.sol   Subscription lifecycle (subscribe/cancel/renew)
   test/CreatorRegistry.t.sol    Foundry unit tests
+  test/SubscriptionManager.t.sol Subscription contract tests
   test/mocks/MockERC20.sol      Test helper
   scripts/Deploy.s.sol          Deployment script
   foundry.toml                  Compiler config (solc 0.8.24, paris EVM, optimizer 200)
@@ -108,7 +112,7 @@ docs/                           Architecture and development documentation
 
 ---
 
-## Completed Phases (0-3)
+## Completed Phases (0-3 + Phase 4 partial)
 
 These phases are done. Reference them for patterns, don't rebuild them.
 
@@ -130,22 +134,29 @@ Per-second streams via CFAv1Forwarder (`setFlowrate` handles create/update/delet
 Super Token wrapping (approve+upgrade for ERC-20, upgradeByETH for native ETH),
 real-time balance animation, creator stream dashboard, multi-token (ETHx, USDCx, DAIx).
 
+### Phase 4 (partial): Subscriptions — Contract + UI
+SubscriptionManager.sol deployed to Base Sepolia at
+`0xD77A14d390F6BC08F6aB720787c046F8b2850114` (verified). Pull-payment model chosen.
+Frontend subscription UI complete: SubscribeForm component with ERC-20 token selection,
+period picker (weekly/monthly/yearly), approve+subscribe flow, existing subscription
+detection and cancellation. Subscribe tab enabled in PaymentModeSelector.
+**Remaining:** keeper automation, subscription status display, subscriber dashboard.
+
 ---
 
 ## Remaining Phases
 
-### Phase 4: Subscriptions _(next up)_
-Recurring pull payments. **Highest complexity remaining.** Requires:
-- New `SubscriptionManager.sol` contract
-- Design decision: pull-payment vs Sablier v2 lockups
-- Off-chain keeper automation (Gelato Automate or Chainlink Automation)
-- Frontend: plan selection, allowance approval, manage active subs
-- Subscriber + creator dashboard views
-- Subscription status tracking (active/expired/cancelled)
+### Phase 4: Subscriptions _(in progress — contract + UI done)_
+Pull-payment model. Subscriber approves ERC-20 allowance, contract pulls
+on schedule. First payment pulled immediately on subscribe.
 
-**Key difference from streaming:** Subscriptions are periodic discrete pulls
-(e.g. monthly), not continuous flows. The sender pre-approves an ERC-20
-allowance and a keeper pulls the payment on schedule.
+**Done:** SubscriptionManager.sol (deployed + verified), Foundry tests,
+subscription UI (SubscribeForm, useSubscription hooks), PaymentModeSelector enabled.
+
+**Remaining:**
+- Renewal automation via Gelato Automate or Chainlink Automation (keeper calls `processRenewal()`)
+- Subscription status display (active/expired/cancelled)
+- Subscriber dashboard — list active subscriptions with cancel ability
 
 ### Phase 5A: Mainnet & Monitoring
 Deploy to Base mainnet, production RPC, Sentry, analytics.
@@ -174,6 +185,22 @@ already fractions of a cent.
   `address(0)` = native ETH.
 - **PaymentMode enum:** `TIP=0, SUBSCRIPTION=1, STREAM=2` (on-chain, maps to
   the `PaymentTier.mode` field)
+
+### SubscriptionManager.sol (deployed)
+- **Address (Base Sepolia):** `0xD77A14d390F6BC08F6aB720787c046F8b2850114`
+- **Functions:** `subscribe(creator, token, amountPerPeriod, periodSeconds)`,
+  `cancel(subscriptionId)`, `updateSubscription(subscriptionId, newAmount, newPeriod)`,
+  `processRenewal(subscriptionId)`, `getSubscription(id)`,
+  `getSubscriptionsBySubscriber(addr)`, `getSubscriptionsByCreator(addr)`
+- **Events:** `SubscriptionCreated`, `SubscriptionRenewed`, `SubscriptionUpdated`,
+  `SubscriptionCancelled`
+- **Constraints:** MIN_PERIOD=86400 (1 day), MAX_PERIOD=31536000 (365 days),
+  ERC-20 only (no native ETH — `token != address(0)`)
+- **Key design:** First payment pulled immediately in `subscribe()`. Renewals
+  pulled by keeper via `processRenewal()` after `nextPaymentTimestamp` passes.
+  Subscriber must maintain sufficient ERC-20 allowance on this contract.
+- **Env var:** `NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS`
+- **ABI:** Full ABI in `apps/web/src/lib/contracts.ts` as `subscriptionManagerAbi`
 
 ### Superfluid (external, no custom contracts)
 - **CFAv1Forwarder:** Canonical singleton at `0xcfA132E353cB4E398080B9700609bb008eceB125`
@@ -325,6 +352,7 @@ for which vars the app requires. If you add a new env var:
 | `NEXT_PUBLIC_PRIVY_APP_ID` | Client | Privy app identifier |
 | `NEXT_PUBLIC_DEFAULT_CHAIN_ID` | Client | Target chain (8453 or 84532) |
 | `NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS` | Client | CreatorRegistry contract address |
+| `NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS` | Client | SubscriptionManager contract address |
 | `NEXT_PUBLIC_BASE_RPC_URL` | Client | Base mainnet RPC |
 | `NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL` | Client | Base Sepolia RPC |
 | `NEXT_PUBLIC_PINATA_GATEWAY_URL` | Client | Pinata dedicated IPFS gateway |
@@ -390,31 +418,29 @@ See `docs/` for the full curl command.
 
 ---
 
-## Subscription System Design Context (Phase 4 prep)
+## Subscription System Context (Phase 4)
 
-Phase 4 is the most architecturally complex remaining phase. Key considerations:
+**Design decision: Pull-payment model** was chosen over Sablier v2. Simpler,
+more flexible, and gives subscribers full control of their allowance.
 
-### What already exists that subscriptions must integrate with:
-- `PaymentMode` type already includes `'subscription'` in `packages/shared/src/types.ts`
-- `SubscriptionPayment` interface already defined (recipientAddress, amountWeiPerPeriod,
-  periodSeconds, tokenAddress, startTimestamp)
-- `PaymentTier` struct on-chain already has `PaymentMode.SUBSCRIPTION` (enum value 1)
-- `PaymentModeSelector.tsx` has Subscribe tab (currently `enabled: false`)
-- Creator profiles can already define subscription tiers via the registry
+### What's built:
+- `SubscriptionManager.sol` deployed + verified on Base Sepolia
+- `useSubscription.ts` — 4 hooks: `useSubscribe`, `useSubscriptionCancel`,
+  `useSubscriptionAllowance`, `useExistingSubscription`
+- `SubscribeForm.tsx` — ERC-20 token selector (no native ETH), period picker
+  (weekly=604800s, monthly=2592000s, yearly=31536000s), approve+subscribe flow,
+  existing sub detection with cancel
+- Subscribe tab enabled in `PaymentModeSelector.tsx`
+- Full ABI in `contracts.ts` as `subscriptionManagerAbi`
 
-### What needs to be built:
-- `SubscriptionManager.sol` — new contract managing subscription lifecycle
-- Keeper integration (Gelato or Chainlink) for automated pulls
-- Frontend subscription flow (plan selection -> approve allowance -> subscribe)
-- Subscription status tracking and management UI
-- The `SubscriptionPayment` type uses `periodSeconds: number` — this maps to
-  a `uint256` in the contract
-
-### Design decision still needed:
-- **Pull-payment model** (our contract pulls from approved allowance on schedule
-  via keeper) vs **Sablier v2** (lockup streams with periodic unlocks).
-  Pull-payment is simpler and more flexible. Sablier adds escrow guarantees
-  but more complexity.
+### What remains:
+- **Keeper automation** — off-chain service to call `processRenewal(subscriptionId)`
+  when `block.timestamp >= nextPaymentTimestamp`. Options: Gelato Automate or
+  Chainlink Automation. Needs to enumerate active subscriptions and batch renewals.
+- **Subscription status display** — show active/expired/cancelled state on creator
+  pages and dashboard
+- **Subscriber dashboard** — `/subscriber/dashboard` or similar, listing active
+  subs with cancel/update ability
 
 ---
 
