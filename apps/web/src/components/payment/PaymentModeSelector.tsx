@@ -1,9 +1,7 @@
 /**
  * PaymentModeSelector — Tab UI for switching between payment modes.
  *
- * Currently only "Tip" is active. Subscription and Stream tabs are
- * shown as disabled placeholders with "Coming soon" badges,
- * signalling upcoming functionality.
+ * All three modes (Tip, Subscribe, Stream) are active.
  */
 
 'use client'
@@ -19,7 +17,7 @@ interface PaymentModeSelectorProps {
 
 const MODES: readonly { mode: PaymentMode; label: string; enabled: boolean }[] = [
   { mode: 'tip', label: 'Tip', enabled: true },
-  { mode: 'subscription', label: 'Subscribe', enabled: false },
+  { mode: 'subscription', label: 'Subscribe', enabled: true },
   { mode: 'stream', label: 'Stream', enabled: true },
 ]
 

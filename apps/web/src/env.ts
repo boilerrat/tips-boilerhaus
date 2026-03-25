@@ -25,6 +25,12 @@ const envSchema = z.object({
     .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid EVM address')
     .optional(),
 
+  // SubscriptionManager contract address (set after deploy)
+  NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS: z
+    .string()
+    .regex(/^0x[a-fA-F0-9]{40}$/, 'Must be a valid EVM address')
+    .optional(),
+
   NEXT_PUBLIC_BASE_RPC_URL: z.string().url().optional(),
   NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL: z.string().url().optional(),
 
@@ -47,6 +53,8 @@ const raw = {
     process.env.NEXT_PUBLIC_DEFAULT_CHAIN_ID ?? '84532',
   NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS:
     process.env.NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS,
+  NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS:
+    process.env.NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS,
   NEXT_PUBLIC_BASE_RPC_URL: process.env.NEXT_PUBLIC_BASE_RPC_URL,
   NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL: process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL,
   PINATA_JWT: process.env.PINATA_JWT,
@@ -70,6 +78,7 @@ export const env: z.infer<typeof envSchema> = result.success
       NEXT_PUBLIC_PRIVY_APP_ID: raw.NEXT_PUBLIC_PRIVY_APP_ID ?? '',
       NEXT_PUBLIC_DEFAULT_CHAIN_ID: 84532,
       NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS: undefined,
+      NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS: undefined,
       NEXT_PUBLIC_BASE_RPC_URL: undefined,
       NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL: undefined,
       PINATA_JWT: undefined,

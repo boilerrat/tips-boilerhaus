@@ -18,6 +18,7 @@ import { useCreatorProfile } from '@/hooks/useCreatorProfile'
 import { useCreatorMetadata } from '@/hooks/useCreatorMetadata'
 import { TipForm } from '@/components/payment/TipForm'
 import { StreamForm } from '@/components/payment/StreamForm'
+import { SubscribeForm } from '@/components/payment/SubscribeForm'
 import { TipHistory } from '@/components/payment/TipHistory'
 import { PaymentModeSelector } from '@/components/payment/PaymentModeSelector'
 import { FundWalletBanner } from '@/components/payment/FundWalletBanner'
@@ -195,6 +196,11 @@ export default function PayPage({ params }: PayPageProps) {
             </div>
           ) : paymentMode === 'stream' ? (
             <StreamForm
+              recipientAddress={address}
+              displayName={displayName}
+            />
+          ) : paymentMode === 'subscription' ? (
+            <SubscribeForm
               recipientAddress={address}
               displayName={displayName}
             />
