@@ -26,8 +26,8 @@ contract Deploy is Script {
 
         vm.startBroadcast(deployerKey);
 
-        // Deploy with deployer as fee recipient
-        CreatorRegistry registry = new CreatorRegistry(deployer);
+        // Deploy with deployer as fee recipient, zero fee for Phase 1
+        CreatorRegistry registry = new CreatorRegistry(deployer, 0);
         console2.log("CreatorRegistry deployed at:", address(registry));
 
         // Smoke test: register the deployer as a creator to confirm events emit

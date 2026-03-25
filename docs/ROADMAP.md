@@ -54,7 +54,8 @@ Last updated: 2026-03-24
 - [x] **`CreatorRegistry.sol`** — minimal registry mapping addresses to IPFS metadata hashes, events on register/update
 - [x] **Foundry tests** for CreatorRegistry
 - [x] **`Deploy.s.sol`** — Foundry deployment script for Base Sepolia
-- [x] **Deploy to Base Sepolia** — contract at `0xd984470D4D1dC129e165a6716d9B20F0A6D72A08`, verified on Blockscout
+- [x] **Deploy to Base Sepolia** — v2 (hardened) at `0xd9e883c4a8340fF4138d4fE229B05445fAaE0971`, verified on Blockscout
+- [x] **Security hardening** — ReentrancyGuard, SafeERC20, immutable fee params, zero-address checks, MAX_TIERS cap, CEI pattern
 
 ### Known Issues
 

@@ -12,8 +12,11 @@ solc_version = "0.8.24"
 optimizer = true
 optimizer_runs = 200
 
-# EVM version — paris matches deployed CreatorRegistry on Base Sepolia
+# EVM version — paris for reproducible builds on Base
 evm_version = "paris"
+
+# Remappings
+remappings = ["@openzeppelin/=lib/openzeppelin-contracts/"]
 
 # Fuzz testing config
 [fuzz]

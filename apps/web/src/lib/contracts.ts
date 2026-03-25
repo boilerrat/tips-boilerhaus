@@ -19,8 +19,25 @@ export const REGISTRY_ADDRESS = env.NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS as
 export const creatorRegistryAbi = [
   {
     type: 'constructor',
-    inputs: [{ name: '_feeRecipient', type: 'address' }],
+    inputs: [
+      { name: '_feeRecipient', type: 'address' },
+      { name: '_feeBps', type: 'uint256' },
+    ],
     stateMutability: 'nonpayable',
+  },
+  {
+    type: 'function',
+    name: 'MAX_FEE_BPS',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
+  },
+  {
+    type: 'function',
+    name: 'MAX_TIERS',
+    inputs: [],
+    outputs: [{ name: '', type: 'uint256' }],
+    stateMutability: 'view',
   },
   {
     type: 'function',
@@ -183,8 +200,11 @@ export const creatorRegistryAbi = [
   { type: 'error', name: 'AlreadyActive', inputs: [] },
   { type: 'error', name: 'AlreadyInactive', inputs: [] },
   { type: 'error', name: 'AlreadyRegistered', inputs: [] },
-  { type: 'error', name: 'ERC20TransferFailed', inputs: [] },
   { type: 'error', name: 'ETHTransferFailed', inputs: [] },
+  { type: 'error', name: 'FeeTooHigh', inputs: [] },
   { type: 'error', name: 'IncorrectETHAmount', inputs: [] },
+  { type: 'error', name: 'InvalidRecipient', inputs: [] },
   { type: 'error', name: 'NotRegistered', inputs: [] },
+  { type: 'error', name: 'TooManyTiers', inputs: [] },
+  { type: 'error', name: 'ZeroAddress', inputs: [] },
 ] as const
