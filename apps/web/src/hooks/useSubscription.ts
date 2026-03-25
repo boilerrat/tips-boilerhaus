@@ -20,11 +20,10 @@ import {
   useWaitForTransactionReceipt,
   useReadContract,
   useAccount,
+  usePublicClient,
 } from 'wagmi'
 import { useQuery } from '@tanstack/react-query'
 import { erc20Abi, maxUint256, zeroAddress } from 'viem'
-import { readContract } from '@wagmi/core'
-import { useConfig } from 'wagmi'
 import {
   subscriptionManagerAbi,
   SUBSCRIPTION_MANAGER_ADDRESS,
@@ -382,7 +381,7 @@ export function useExistingSubscription(
  * Returns both active and inactive subscriptions for status display.
  */
 export function useCreatorSubscriptions(creatorAddress: `0x${string}` | undefined) {
-  const config = useConfig()
+  const publicClient = usePublicClient()
 
   // Get subscription IDs for the creator
   const { data: subIds, isLoading: isLoadingIds } = useReadContract({
@@ -405,10 +404,10 @@ export function useCreatorSubscriptions(creatorAddress: `0x${string}` | undefine
   const { data: subscriptions, isLoading: isLoadingDetails } = useQuery({
     queryKey: ['creatorSubscriptions', creatorAddress, ids.map(String)],
     queryFn: async () => {
-      if (!SUBSCRIPTION_MANAGER_ADDRESS || ids.length === 0) return []
+      if (!SUBSCRIPTION_MANAGER_ADDRESS || !publicClient || ids.length === 0) return []
       const results = await Promise.all(
         ids.map((id) =>
-          readContract(config, {
+          publicClient.readContract({
             address: SUBSCRIPTION_MANAGER_ADDRESS!,
             abi: subscriptionManagerAbi,
             functionName: 'getSubscription',
@@ -418,7 +417,7 @@ export function useCreatorSubscriptions(creatorAddress: `0x${string}` | undefine
       )
       return results as SubscriptionData[]
     },
-    enabled: ids.length > 0,
+    enabled: ids.length > 0 && !!publicClient,
     refetchInterval: 30_000,
   })
 
@@ -437,7 +436,7 @@ export function useCreatorSubscriptions(creatorAddress: `0x${string}` | undefine
  * Used in the subscriber dashboard to list active/cancelled subs with cancel ability.
  */
 export function useSubscriberSubscriptions(subscriberAddress: `0x${string}` | undefined) {
-  const config = useConfig()
+  const publicClient = usePublicClient()
 
   // Get subscription IDs for the subscriber
   const {
@@ -467,10 +466,10 @@ export function useSubscriberSubscriptions(subscriberAddress: `0x${string}` | un
   } = useQuery({
     queryKey: ['subscriberSubscriptions', subscriberAddress, ids.map(String)],
     queryFn: async () => {
-      if (!SUBSCRIPTION_MANAGER_ADDRESS || ids.length === 0) return []
+      if (!SUBSCRIPTION_MANAGER_ADDRESS || !publicClient || ids.length === 0) return []
       const results = await Promise.all(
         ids.map((id) =>
-          readContract(config, {
+          publicClient.readContract({
             address: SUBSCRIPTION_MANAGER_ADDRESS!,
             abi: subscriptionManagerAbi,
             functionName: 'getSubscription',
@@ -480,7 +479,7 @@ export function useSubscriberSubscriptions(subscriberAddress: `0x${string}` | un
       )
       return results as SubscriptionData[]
     },
-    enabled: ids.length > 0,
+    enabled: ids.length > 0 && !!publicClient,
     refetchInterval: 30_000,
   })
 

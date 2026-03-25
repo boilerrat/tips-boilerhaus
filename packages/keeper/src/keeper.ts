@@ -14,7 +14,6 @@ import {
   createWalletClient,
   http,
   type PublicClient,
-  type WalletClient,
   type Transport,
   type Chain,
 } from 'viem'
@@ -51,12 +50,12 @@ export function createKeeper(config: KeeperConfig) {
   const transport = http(config.rpcUrl)
   const account = privateKeyToAccount(config.privateKey)
 
-  const publicClient: PublicClient<Transport, Chain> = createPublicClient({
+  const publicClient = createPublicClient({
     chain,
     transport,
   })
 
-  const walletClient: WalletClient = createWalletClient({
+  const walletClient = createWalletClient({
     account,
     chain,
     transport,
