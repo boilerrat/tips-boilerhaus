@@ -189,9 +189,9 @@ does not exist in the stack today._
 - [x] Foundry tests for SubscriptionManager
 - [x] Deploy SubscriptionManager to Base Sepolia (`0xD77A14d390F6BC08F6aB720787c046F8b2850114`, verified)
 - [x] Subscription UI — plan selection, approve allowance, manage active subs
-- [ ] Renewal automation via Gelato Automate or Chainlink Automation
-- [ ] Subscription status display (active/expired/cancelled)
-- [ ] Subscriber dashboard — list active subscriptions with cancel ability
+- [x] Renewal automation — keeper service (`packages/keeper`) polls and calls `processRenewal()`
+- [x] Subscription status display (active/overdue/cancelled badges on creator + subscriber dashboards)
+- [x] Subscriber dashboard (`/subscriber/dashboard`) — list active subscriptions with cancel ability
 
 ---
 

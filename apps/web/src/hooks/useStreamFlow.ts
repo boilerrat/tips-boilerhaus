@@ -72,6 +72,12 @@ export function useStreamFlow(): UseStreamFlowResult {
         abi: cfaForwarderAbi,
         functionName: 'setFlowrate',
         args: [superToken, receiver, flowRate],
+        // Superfluid operations route through the host and CFA agreement,
+        // which involves many internal calls. Gas estimation can fail with
+        // "exceeds max transaction gas limit" because the estimator can't
+        // accurately predict cost for these nested calls. Setting an explicit
+        // ceiling avoids that — actual gas used is typically 300-500k.
+        gas: 500_000n,
       })
     },
     [sender, chainId, writeContract],

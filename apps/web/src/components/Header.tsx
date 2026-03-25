@@ -68,6 +68,15 @@ export function Header() {
                   </a>
                 )}
 
+                {/* Subscriber dashboard — available to all authenticated users */}
+                <a
+                  href="/subscriber/dashboard"
+                  className="px-2 sm:px-3 py-1.5 text-xs text-zinc-500 hover:text-brand-400 transition-colors duration-200"
+                >
+                  <span className="sm:hidden">Subs</span>
+                  <span className="hidden sm:inline">My Subs</span>
+                </a>
+
                 {isWrongChain ? (
                   <button
                     onClick={() => switchChain({ chainId: targetChain.id })}

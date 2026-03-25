@@ -1,0 +1,31 @@
+# ============================================================
+# Dockerfile.keeper — Subscription renewal keeper service
+#
+# Lightweight Node.js service that periodically sweeps the
+# SubscriptionManager contract and calls processRenewal()
+# for any subscriptions that are due.
+#
+# Build:   docker build -f infra/docker/Dockerfile.keeper -t tips-keeper .
+# Run:     docker run --env-file .env tips-keeper
+# ============================================================
+
+FROM node:20-alpine AS base
+RUN corepack enable && corepack prepare pnpm@9 --activate
+WORKDIR /app
+
+# ---- Dependencies ----
+FROM base AS deps
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY packages/keeper/package.json packages/keeper/package.json
+RUN pnpm install --frozen-lockfile --filter @tips/keeper
+
+# ---- Runner ----
+FROM base AS runner
+ENV NODE_ENV=production
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/packages/keeper/node_modules ./packages/keeper/node_modules
+COPY packages/keeper ./packages/keeper
+
+USER node
+CMD ["pnpm", "--filter", "@tips/keeper", "start"]

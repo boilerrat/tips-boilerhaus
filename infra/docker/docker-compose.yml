@@ -47,6 +47,25 @@ services:
       retries: 3
       start_period: 15s
 
+  # -- Subscription renewal keeper --
+  # Periodically sweeps SubscriptionManager for due renewals and calls
+  # processRenewal(). Requires a funded keeper wallet (gas only — Base is cheap).
+  # Disable this service if subscriptions are not in use.
+  keeper:
+    build:
+      context: ../..
+      dockerfile: infra/docker/Dockerfile.keeper
+    image: tips-keeper:${GIT_SHA:-dev}
+    restart: unless-stopped
+    environment:
+      KEEPER_PRIVATE_KEY: ${KEEPER_PRIVATE_KEY}
+      KEEPER_RPC_URL: ${KEEPER_RPC_URL:-${NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL:-}}
+      SUBSCRIPTION_MANAGER_ADDRESS: ${NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS:-}
+      KEEPER_INTERVAL_MS: ${KEEPER_INTERVAL_MS:-60000}
+      KEEPER_CHAIN_ID: ${NEXT_PUBLIC_DEFAULT_CHAIN_ID:-84532}
+    networks:
+      - traefik_public
+
 networks:
   traefik_public:
     external: true  # Must exist on the host — created by Dokploy/Traefik setup

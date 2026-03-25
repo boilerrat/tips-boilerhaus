@@ -3,8 +3,10 @@
  *
  * - useSubscribe: create a new subscription (approve + subscribe)
  * - useSubscriptionCancel: cancel an active subscription
- * - useCreatorSubscriptions: read active subscription IDs for sender→creator
- * - useSubscriptionDetail: read a single subscription by ID
+ * - useSubscriptionAllowance: check + approve ERC-20 allowance for SubMgr
+ * - useExistingSubscription: find active sub from sender to a creator
+ * - useCreatorSubscriptions: read incoming subscriptions for a creator
+ * - useSubscriberSubscriptions: read all subscriptions for a subscriber
  *
  * All write hooks follow the multi-step state machine pattern
  * (idle → approving → confirming → success) established in TipForm/StreamForm.
@@ -19,7 +21,10 @@ import {
   useReadContract,
   useAccount,
 } from 'wagmi'
+import { useQuery } from '@tanstack/react-query'
 import { erc20Abi, maxUint256, zeroAddress } from 'viem'
+import { readContract } from '@wagmi/core'
+import { useConfig } from 'wagmi'
 import {
   subscriptionManagerAbi,
   SUBSCRIPTION_MANAGER_ADDRESS,
@@ -42,6 +47,18 @@ export interface SubscriptionData {
   readonly active: boolean
   readonly pendingAmount: bigint
   readonly pendingPeriod: bigint
+}
+
+/** Derived subscription status based on on-chain state + current time. */
+export type SubscriptionStatus = 'active' | 'overdue' | 'cancelled'
+
+/** Compute the status of a subscription based on its on-chain data. */
+export function getSubscriptionStatus(sub: SubscriptionData): SubscriptionStatus {
+  if (!sub.active) return 'cancelled'
+  const now = BigInt(Math.floor(Date.now() / 1000))
+  const nextRenewal = sub.lastPaidTimestamp + sub.periodSeconds
+  if (now >= nextRenewal) return 'overdue'
+  return 'active'
 }
 
 // ----------------------------------------------------------------
@@ -352,5 +369,129 @@ export function useExistingSubscription(
   return {
     subscription: activeSub,
     hasActiveSubscription: !!activeSub,
+  }
+}
+
+// ----------------------------------------------------------------
+// useCreatorSubscriptions — read all incoming subscriptions for a creator
+// ----------------------------------------------------------------
+
+/**
+ * Fetch all subscriptions where the given address is the creator (recipient).
+ * Reads subscription IDs from the contract, then batch-fetches each detail.
+ * Returns both active and inactive subscriptions for status display.
+ */
+export function useCreatorSubscriptions(creatorAddress: `0x${string}` | undefined) {
+  const config = useConfig()
+
+  // Get subscription IDs for the creator
+  const { data: subIds, isLoading: isLoadingIds } = useReadContract({
+    address: SUBSCRIPTION_MANAGER_ADDRESS ?? zeroAddress,
+    abi: subscriptionManagerAbi,
+    functionName: 'getSubscriptionsByCreator',
+    args: [creatorAddress!],
+    query: {
+      enabled: !!creatorAddress && !!SUBSCRIPTION_MANAGER_ADDRESS,
+      refetchInterval: 30_000,
+    },
+  })
+
+  // Batch-fetch subscription details via TanStack Query
+  const ids = useMemo(() => {
+    if (!subIds) return []
+    return (subIds as bigint[]).slice(-50) // cap at 50 most recent
+  }, [subIds])
+
+  const { data: subscriptions, isLoading: isLoadingDetails } = useQuery({
+    queryKey: ['creatorSubscriptions', creatorAddress, ids.map(String)],
+    queryFn: async () => {
+      if (!SUBSCRIPTION_MANAGER_ADDRESS || ids.length === 0) return []
+      const results = await Promise.all(
+        ids.map((id) =>
+          readContract(config, {
+            address: SUBSCRIPTION_MANAGER_ADDRESS!,
+            abi: subscriptionManagerAbi,
+            functionName: 'getSubscription',
+            args: [id],
+          }),
+        ),
+      )
+      return results as SubscriptionData[]
+    },
+    enabled: ids.length > 0,
+    refetchInterval: 30_000,
+  })
+
+  return {
+    subscriptions: subscriptions ?? [],
+    isLoading: isLoadingIds || isLoadingDetails,
+  }
+}
+
+// ----------------------------------------------------------------
+// useSubscriberSubscriptions — read all subscriptions for a subscriber
+// ----------------------------------------------------------------
+
+/**
+ * Fetch all subscriptions created by the connected wallet (as subscriber).
+ * Used in the subscriber dashboard to list active/cancelled subs with cancel ability.
+ */
+export function useSubscriberSubscriptions(subscriberAddress: `0x${string}` | undefined) {
+  const config = useConfig()
+
+  // Get subscription IDs for the subscriber
+  const {
+    data: subIds,
+    isLoading: isLoadingIds,
+    refetch: refetchIds,
+  } = useReadContract({
+    address: SUBSCRIPTION_MANAGER_ADDRESS ?? zeroAddress,
+    abi: subscriptionManagerAbi,
+    functionName: 'getSubscriptionsBySubscriber',
+    args: [subscriberAddress!],
+    query: {
+      enabled: !!subscriberAddress && !!SUBSCRIPTION_MANAGER_ADDRESS,
+      refetchInterval: 30_000,
+    },
+  })
+
+  const ids = useMemo(() => {
+    if (!subIds) return []
+    return (subIds as bigint[]).slice(-50) // cap at 50 most recent
+  }, [subIds])
+
+  const {
+    data: subscriptions,
+    isLoading: isLoadingDetails,
+    refetch: refetchDetails,
+  } = useQuery({
+    queryKey: ['subscriberSubscriptions', subscriberAddress, ids.map(String)],
+    queryFn: async () => {
+      if (!SUBSCRIPTION_MANAGER_ADDRESS || ids.length === 0) return []
+      const results = await Promise.all(
+        ids.map((id) =>
+          readContract(config, {
+            address: SUBSCRIPTION_MANAGER_ADDRESS!,
+            abi: subscriptionManagerAbi,
+            functionName: 'getSubscription',
+            args: [id],
+          }),
+        ),
+      )
+      return results as SubscriptionData[]
+    },
+    enabled: ids.length > 0,
+    refetchInterval: 30_000,
+  })
+
+  const refetch = useCallback(() => {
+    refetchIds()
+    refetchDetails()
+  }, [refetchIds, refetchDetails])
+
+  return {
+    subscriptions: subscriptions ?? [],
+    isLoading: isLoadingIds || isLoadingDetails,
+    refetch,
   }
 }
