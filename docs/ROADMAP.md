@@ -187,7 +187,7 @@ does not exist in the stack today._
 - [x] Subscription design document (pull-payment vs Sablier, automation strategy, cancellation UX)
 - [x] `SubscriptionManager.sol` — contract for managing subscription state and pulls
 - [x] Foundry tests for SubscriptionManager
-- [ ] Deploy SubscriptionManager to Base Sepolia
+- [x] Deploy SubscriptionManager to Base Sepolia (`0xD77A14d390F6BC08F6aB720787c046F8b2850114`, verified)
 - [ ] Subscription UI — plan selection, approve allowance, manage active subs
 - [ ] Renewal automation via Gelato Automate or Chainlink Automation
 - [ ] Subscription status display (active/expired/cancelled)
