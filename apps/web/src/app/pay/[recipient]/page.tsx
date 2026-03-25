@@ -17,6 +17,7 @@ import { useResolveRecipient } from '@/hooks/useResolveRecipient'
 import { useCreatorProfile } from '@/hooks/useCreatorProfile'
 import { useCreatorMetadata } from '@/hooks/useCreatorMetadata'
 import { TipForm } from '@/components/payment/TipForm'
+import { StreamForm } from '@/components/payment/StreamForm'
 import { TipHistory } from '@/components/payment/TipHistory'
 import { PaymentModeSelector } from '@/components/payment/PaymentModeSelector'
 import { FundWalletBanner } from '@/components/payment/FundWalletBanner'
@@ -192,6 +193,11 @@ export default function PayPage({ params }: PayPageProps) {
               <div className="w-4 h-4 border-2 border-zinc-700 border-t-brand-400 rounded-full animate-spin" />
               <p className="text-zinc-500 text-sm font-mono">Loading profile...</p>
             </div>
+          ) : paymentMode === 'stream' ? (
+            <StreamForm
+              recipientAddress={address}
+              displayName={displayName}
+            />
           ) : (
             <TipForm
               recipientAddress={address}

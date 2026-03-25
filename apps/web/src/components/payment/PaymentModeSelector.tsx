@@ -20,7 +20,7 @@ interface PaymentModeSelectorProps {
 const MODES: readonly { mode: PaymentMode; label: string; enabled: boolean }[] = [
   { mode: 'tip', label: 'Tip', enabled: true },
   { mode: 'subscription', label: 'Subscribe', enabled: false },
-  { mode: 'stream', label: 'Stream', enabled: false },
+  { mode: 'stream', label: 'Stream', enabled: true },
 ]
 
 export function PaymentModeSelector({ selected, onSelect }: PaymentModeSelectorProps) {

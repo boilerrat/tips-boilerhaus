@@ -162,19 +162,19 @@ paymaster proxy endpoint._
 
 ---
 
-## Phase 3: Streaming (Superfluid)
+## Phase 3: Streaming (Superfluid) (COMPLETE)
 
 _Per-second token streams via Superfluid CFA. High wow-factor, lower complexity
 than subscriptions — Superfluid contracts already exist on Base, this is
 primarily a frontend integration._
 
-- [ ] Superfluid SDK integration (`@superfluid-finance/sdk-core`)
-- [ ] Super Token wrapping UI (USDC → USDCx, ETH → ETHx)
-- [ ] Stream creation flow — select flow rate, create CFA via Superfluid Forwarder
-- [ ] Stream management — sender can update rate or cancel
-- [ ] Real-time balance animation (streaming counter)
-- [ ] Creator stream dashboard — incoming streams, aggregate flow rate
-- [ ] Multi-token streams — support for Super Tokens on Base
+- [x] Superfluid SDK integration (`@sfpro/sdk` — modern viem/wagmi replacement for deprecated `sdk-core`)
+- [x] Super Token wrapping UI (USDC → USDCx, ETH → ETHx)
+- [x] Stream creation flow — select flow rate, create CFA via Superfluid Forwarder
+- [x] Stream management — sender can update rate or cancel
+- [x] Real-time balance animation (streaming counter)
+- [x] Creator stream dashboard — incoming streams, aggregate flow rate
+- [x] Multi-token streams — support for Super Tokens on Base (ETHx, USDCx, DAIx)
 
 ---
 

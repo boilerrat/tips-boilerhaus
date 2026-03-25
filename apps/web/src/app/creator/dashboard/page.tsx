@@ -20,6 +20,7 @@ import { useCreatorProfile } from '@/hooks/useCreatorProfile'
 import { useCreatorMetadata } from '@/hooks/useCreatorMetadata'
 import { useTipHistory, type TipEvent } from '@/hooks/useTipHistory'
 import { TipHistory } from '@/components/payment/TipHistory'
+import { StreamDashboard } from '@/components/payment/StreamDashboard'
 
 /** Aggregate tips by token into totals. */
 interface TokenTotal {
@@ -212,6 +213,14 @@ export default function CreatorDashboardPage() {
                 </div>
               )}
             </div>
+
+            {/* Active streams */}
+            {address && (
+              <div className="card-elevated p-4">
+                <p className="label mb-3">Active streams</p>
+                <StreamDashboard address={address} />
+              </div>
+            )}
 
             {/* Recent tips */}
             {address && (
