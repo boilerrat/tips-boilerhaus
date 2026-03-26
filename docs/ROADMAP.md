@@ -1,10 +1,10 @@
 # Roadmap — tips.boilerhaus.org
 
-Last updated: 2026-03-24
+Last updated: 2026-03-25
 
 ---
 
-## Phase 0: Scaffold & Infrastructure
+## Phase 0: Scaffold & Infrastructure (COMPLETE)
 
 - [x] Monorepo setup (Turborepo, pnpm workspaces, tsconfig, Prettier)
 - [x] `apps/web` — Next.js 14 app with App Router, Tailwind, layout
@@ -17,7 +17,7 @@ Last updated: 2026-03-24
 
 ---
 
-## Phase 1: Core Tipping (ETH)
+## Phase 1: Core Tipping — ETH (COMPLETE)
 
 ### Frontend
 
@@ -31,7 +31,7 @@ Last updated: 2026-03-24
 
 ### Hooks
 
-- [x] `useResolveRecipient` — ENS ↔ address resolution via mainnet
+- [x] `useResolveRecipient` — ENS <-> address resolution via mainnet
 - [x] `useCreatorProfile` — Read creator profile from registry (graceful fallback when unregistered)
 
 ### Environment & Build
@@ -44,7 +44,7 @@ Last updated: 2026-03-24
 
 ### Deployment
 
-- [x] Dockerfile.web — multi-stage build (deps → builder → runner)
+- [x] Dockerfile.web — multi-stage build (deps -> builder -> runner)
 - [x] docker-compose.yml — Traefik labels, health check, network config
 - [x] **Dokploy deployment** — configure build env vars, verify live at tips.boilerhaus.org
 - [x] **SSL verification** — confirm Let's Encrypt cert via Traefik
@@ -68,11 +68,11 @@ Last updated: 2026-03-24
 _ERC-20 payment mechanics — select token, approve, tip._
 
 - [x] ERC-20 token selector in TipForm (USDC, DAI on Base)
-- [x] Token approval flow (approve → tip in one UX)
+- [x] Token approval flow (approve -> tip in one UX)
 
 ---
 
-## Phase 2B: Creator Identity
+## Phase 2B: Creator Identity (COMPLETE)
 
 _Complete the creator side so pages have identity beyond a raw address._
 
@@ -109,7 +109,7 @@ _Make the product shareable and usable in the real world._
 
 ---
 
-## Phase 2E: Fiat On-Ramp (Coinbase Onramp)
+## Phase 2E: Fiat On-Ramp — Coinbase Onramp (COMPLETE)
 
 _Enable non-crypto users to fund their wallets and tip using a bank card.
 Uses Coinbase Onramp (`@coinbase/cbpay-js`) — zero fees for USDC on Base.
@@ -152,7 +152,7 @@ EOA wallets to ERC-4337 smart accounts. Deferred until after mainnet launch
 _Prerequisites: Coinbase CDP account, Privy smart wallet configuration,
 paymaster proxy endpoint._
 
-- [ ] Evaluate Privy smart wallet migration path (EOA → smart accounts)
+- [ ] Evaluate Privy smart wallet migration path (EOA -> smart accounts)
 - [ ] Document address migration plan for existing registered creators
 - [ ] Configure Coinbase Paymaster URL in Privy dashboard
 - [ ] Backend proxy to protect paymaster endpoint from abuse
@@ -162,14 +162,14 @@ paymaster proxy endpoint._
 
 ---
 
-## Phase 3: Streaming (Superfluid) (COMPLETE)
+## Phase 3: Streaming — Superfluid (COMPLETE)
 
 _Per-second token streams via Superfluid CFA. High wow-factor, lower complexity
 than subscriptions — Superfluid contracts already exist on Base, this is
 primarily a frontend integration._
 
 - [x] Superfluid SDK integration (`@sfpro/sdk` — modern viem/wagmi replacement for deprecated `sdk-core`)
-- [x] Super Token wrapping UI (USDC → USDCx, ETH → ETHx)
+- [x] Super Token wrapping UI (USDC -> USDCx, ETH -> ETHx)
 - [x] Stream creation flow — select flow rate, create CFA via Superfluid Forwarder
 - [x] Stream management — sender can update rate or cancel
 - [x] Real-time balance animation (streaming counter)
@@ -178,11 +178,10 @@ primarily a frontend integration._
 
 ---
 
-## Phase 4: Subscriptions
+## Phase 4: Subscriptions (COMPLETE)
 
-_Recurring pull payments. Highest complexity — requires a new contract, design
-decisions (pull-payment vs Sablier v2), and off-chain keeper automation that
-does not exist in the stack today._
+_Recurring pull payments. Required a new contract, design decisions (pull-payment
+vs Sablier v2), and off-chain keeper automation._
 
 - [x] Subscription design document (pull-payment vs Sablier, automation strategy, cancellation UX)
 - [x] `SubscriptionManager.sol` — contract for managing subscription state and pulls
@@ -195,27 +194,73 @@ does not exist in the stack today._
 
 ---
 
-## Phase 5A: Mainnet & Monitoring
+## Phase 5A: Mainnet Deployment & Monitoring
 
-_Ship as soon as Phase 2D is complete — these are prerequisites for real usage,
-not "hardening."_
+_All three payment modes (tip, subscribe, stream) are feature-complete on
+testnet. This phase deploys to Base mainnet with production infrastructure._
 
-- [ ] Deploy CreatorRegistry to Base mainnet
+### Pre-deploy Decisions
+
+- [ ] Decide mainnet fee configuration (feeBps) for CreatorRegistry and SubscriptionManager — both deployed with `0` on testnet
+- [ ] Decide fee recipient address for mainnet (EOA or multisig)
+- [ ] Decide keeper wallet strategy — dedicated EOA, fund level, alert threshold
+
+### Contract Deployment
+
+- [ ] Deploy CreatorRegistry to Base mainnet (via `scripts/Deploy.s.sol` with mainnet RPC)
+- [ ] Deploy SubscriptionManager to Base mainnet (via `scripts/DeploySubscriptionManager.s.sol` with mainnet RPC)
+- [ ] Verify both contracts on Basescan (`evm_version = "paris"`, `forge flatten`)
+- [ ] Record mainnet contract addresses in `.env.example` comments
+
+### Infrastructure
+
 - [ ] Production RPC configuration (Alchemy/Infura with proper rate limits)
-- [ ] Error monitoring (Sentry)
+- [ ] Update `NEXT_PUBLIC_DEFAULT_CHAIN_ID` to `8453` in production env
+- [ ] Update `NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS` and `NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS` with mainnet addresses
+- [ ] Fix docker-compose: add missing build args (`NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS`, `NEXT_PUBLIC_PINATA_GATEWAY_URL`)
+- [ ] Fix docker-compose health check: use `127.0.0.1` instead of `localhost` (IPv6 resolution issue with Alpine wget)
+- [ ] Deploy keeper to mainnet — update `KEEPER_RPC_URL`, `SUBSCRIPTION_MANAGER_ADDRESS`, `KEEPER_CHAIN_ID` to mainnet values
+- [ ] Fund keeper wallet on Base mainnet (minimal ETH for gas)
+
+### Smoke Testing (mainnet)
+
+- [ ] Tip flow — ETH tip, ERC-20 (USDC) tip via CreatorRegistry
+- [ ] Stream flow — wrap Super Token, create/update/cancel stream via Superfluid
+- [ ] Subscribe flow — approve allowance, subscribe, verify keeper processes renewal
+- [ ] Creator registration — register, upload metadata to IPFS, verify profile display
+- [ ] Fiat on-ramp — Coinbase Onramp flow with mainnet USDC
+
+### Monitoring & Observability
+
+- [ ] Error monitoring (Sentry integration in Next.js app)
+- [ ] Keeper health monitoring — alerting if keeper stops or renewals fail
 - [ ] Basic analytics (PostHog, Plausible, or similar)
 
 ---
 
 ## Phase 5B: Hardening
 
-- [ ] Rate limiting on API routes
+_Production quality gates — security, performance, accessibility, and test coverage._
+
+### Security
+
+- [ ] Security audit of CreatorRegistry.sol and SubscriptionManager.sol
+- [ ] Rate limiting on API routes (`/api/onramp/session`, `/api/ipfs/pin`)
+- [ ] Review Privy session handling and auth boundaries
+
+### Accessibility & Performance
+
 - [ ] Accessibility audit (WCAG AA)
-- [ ] Security audit of smart contracts
 - [ ] Performance audit (bundle size, LCP, CLS)
+- [ ] Image optimization for IPFS-loaded creator avatars
+
+### Testing Infrastructure
+
 - [ ] Frontend test infrastructure (Vitest + Testing Library)
-- [ ] Unit tests for hooks (`useResolveRecipient`, `useCreatorProfile`, `useTipHistory`)
-- [ ] Integration tests for payment flows
+- [ ] Unit tests for hooks (`useResolveRecipient`, `useCreatorProfile`, `useTipHistory`, `useSubscription`, `useStreamFlow`)
+- [ ] Integration tests for payment flows (tip, subscribe, stream)
+- [ ] E2E tests for critical user journeys (pay page, creator registration, dashboard)
+- [ ] Foundry fuzz/invariant tests for both contracts
 
 ---
 
@@ -228,3 +273,4 @@ not "hardening."_
 - [ ] Event indexer migration (The Graph or Ponder — when `getLogs` stops scaling)
 - [ ] Database for off-chain data (tip messages, analytics) — if needed
 - [ ] Clean up docs referencing RainbowKit — code uses Privy
+- [ ] Keeper redundancy — failover if primary keeper instance goes down

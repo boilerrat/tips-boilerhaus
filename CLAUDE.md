@@ -11,7 +11,7 @@ Read it fully before touching any code.
 A non-custodial creator tipping protocol built on Base. It supports three payment modes:
 
 - **Tip** — one-time ETH or ERC-20 transfer directly to a recipient address
-- **Subscription** — recurring periodic pull against a pre-approved token allowance _(Phase 4 — contract + UI complete, keeper automation remaining)_
+- **Subscription** — recurring periodic pull against a pre-approved token allowance _(Phase 4 — complete)_
 - **Stream** — continuous per-second token flow via Superfluid CFA _(Phase 3 — complete)_
 
 No funds are ever custodied by the protocol. All value flows wallet-to-wallet.
@@ -30,9 +30,11 @@ apps/web/                       Next.js 14 frontend (tips.boilerhaus.org)
       creator/
         register/page.tsx       Creator registration form
         edit/page.tsx           Creator profile editing
-        dashboard/page.tsx      Creator dashboard (earnings, streams, tips)
+        dashboard/page.tsx      Creator dashboard (earnings, streams, subscriptions, tips)
+      subscriber/
+        dashboard/page.tsx      Subscriber dashboard (active subs, cancel ability)
       pay/[recipient]/
-        page.tsx                Recipient payment page (tip + stream UI)
+        page.tsx                Recipient payment page (tip + subscribe + stream UI)
         opengraph-image.tsx     Dynamic OG image generation
       api/
         onramp/session/route.ts Coinbase Onramp session token endpoint
@@ -45,6 +47,7 @@ apps/web/                       Next.js 14 frontend (tips.boilerhaus.org)
       payment/
         TipForm.tsx             One-time tip form (ETH + ERC-20)
         SubscribeForm.tsx       Subscription form (approve allowance + subscribe)
+        SubscriptionDashboard.tsx Creator's incoming subscriptions view
         StreamForm.tsx          Superfluid stream creation/management
         StreamDashboard.tsx     Creator's incoming streams view
         StreamingCounter.tsx    Animated real-time balance ticker
@@ -58,7 +61,8 @@ apps/web/                       Next.js 14 frontend (tips.boilerhaus.org)
       useTipHistory.ts         Fetch TipReceived events via getLogs
       useTokenMetadata.ts      Fetch ERC-20 metadata for custom tokens
       useCoinbaseOnramp.ts     Coinbase Onramp popup flow
-      useSubscription.ts       Subscribe, cancel, allowance, existing sub detection
+      useSubscription.ts       Subscribe, cancel, allowance, existing sub detection,
+                               creator/subscriber subscription lists, status helpers
       useWrapSuperToken.ts     ERC-20 -> Super Token wrapping
       useStreamFlow.ts         Create/update/cancel Superfluid streams
       useStreams.ts             Query Superfluid subgraph for active streams
@@ -78,10 +82,15 @@ packages/contracts/             Solidity contracts — Foundry toolchain
   test/mocks/MockERC20.sol      Test helper
   scripts/Deploy.s.sol          Deployment script
   foundry.toml                  Compiler config (solc 0.8.24, paris EVM, optimizer 200)
+packages/keeper/                Subscription renewal keeper service
+  src/index.ts                  Entry point — periodic sweep loop
+  src/keeper.ts                 Sweep logic — iterate subs, call processRenewal()
+  src/config.ts                 Env-based configuration (private key, RPC, interval)
+  src/abi.ts                    Minimal SubscriptionManager ABI for keeper
 packages/shared/                Shared TypeScript domain types
   src/types.ts                  PaymentMode, TipPayment, StreamPayment, SubscriptionPayment,
                                 CreatorProfile, CreatorMetadata, PaymentTier
-infra/docker/                   Dockerfile.web + docker-compose.yml
+infra/docker/                   Dockerfile.web + Dockerfile.keeper + docker-compose.yml
 infra/traefik/                  Traefik dynamic config for subdomain routing
 docs/                           Architecture and development documentation
   ROADMAP.md                    Phased plan with checkboxes
@@ -108,11 +117,12 @@ docs/                           Architecture and development documentation
 | CI/CD | GitHub Actions -> GHCR -> Dokploy |
 | Primary chain | Base mainnet (8453), Base Sepolia (84532) for dev |
 | Async state | TanStack Query v5 |
+| Subscription keeper | Node.js + viem (standalone service, `packages/keeper`) |
 | Validation | Zod (env vars, API request bodies) |
 
 ---
 
-## Completed Phases (0-3 + Phase 4 partial)
+## Completed Phases (0-4)
 
 These phases are done. Reference them for patterns, don't rebuild them.
 
@@ -134,29 +144,18 @@ Per-second streams via CFAv1Forwarder (`setFlowrate` handles create/update/delet
 Super Token wrapping (approve+upgrade for ERC-20, upgradeByETH for native ETH),
 real-time balance animation, creator stream dashboard, multi-token (ETHx, USDCx, DAIx).
 
-### Phase 4 (partial): Subscriptions — Contract + UI
-SubscriptionManager.sol deployed to Base Sepolia at
-`0xD77A14d390F6BC08F6aB720787c046F8b2850114` (verified). Pull-payment model chosen.
-Frontend subscription UI complete: SubscribeForm component with ERC-20 token selection,
-period picker (weekly/monthly/yearly), approve+subscribe flow, existing subscription
-detection and cancellation. Subscribe tab enabled in PaymentModeSelector.
-**Remaining:** keeper automation, subscription status display, subscriber dashboard.
+### Phase 4: Subscriptions (complete)
+Pull-payment model via SubscriptionManager.sol (deployed + verified on Base Sepolia
+at `0xD77A14d390F6BC08F6aB720787c046F8b2850114`). Full lifecycle: subscribe (first
+payment pulled immediately), cancel, update (pending plan changes applied at renewal).
+Keeper service (`packages/keeper`) polls and calls `processRenewal()` for due subs.
+Subscription status display (active/overdue/cancelled) on creator dashboard.
+Subscriber dashboard at `/subscriber/dashboard` with cancel ability.
+"My Subs" nav link in Header for all authenticated users.
 
 ---
 
 ## Remaining Phases
-
-### Phase 4: Subscriptions _(in progress — contract + UI done)_
-Pull-payment model. Subscriber approves ERC-20 allowance, contract pulls
-on schedule. First payment pulled immediately on subscribe.
-
-**Done:** SubscriptionManager.sol (deployed + verified), Foundry tests,
-subscription UI (SubscribeForm, useSubscription hooks), PaymentModeSelector enabled.
-
-**Remaining:**
-- Renewal automation via Gelato Automate or Chainlink Automation (keeper calls `processRenewal()`)
-- Subscription status display (active/expired/cancelled)
-- Subscriber dashboard — list active subscriptions with cancel ability
 
 ### Phase 5A: Mainnet & Monitoring
 Deploy to Base mainnet, production RPC, Sentry, analytics.
@@ -227,7 +226,7 @@ already fractions of a cent.
 ### General
 
 - TypeScript everywhere. No `any`. No implicit `any`. Strict mode is on.
-- `tsconfig.json` target is `ES2020` (BigInt literals `0n` are used throughout).
+- `tsconfig.json` target is `ES2022` (BigInt literals `0n` are used throughout).
 - Every new file gets a brief JSDoc block at the top explaining its purpose.
 - Comment non-obvious decisions inline — especially anything crypto or contract-related.
 - Use `zod` for any runtime validation. The env module pattern in `apps/web/src/env.ts`
@@ -359,6 +358,9 @@ for which vars the app requires. If you add a new env var:
 | `PINATA_JWT` | Server | Pinata API key for IPFS pinning |
 | `COINBASE_ONRAMP_API_KEY` | Server | CDP API key name |
 | `COINBASE_ONRAMP_API_SECRET` | Server | CDP EC private key (PEM) |
+| `KEEPER_PRIVATE_KEY` | Keeper | 0x-prefixed private key for renewal tx gas |
+| `KEEPER_RPC_URL` | Keeper | RPC endpoint (defaults to Base Sepolia RPC) |
+| `KEEPER_INTERVAL_MS` | Keeper | Sweep interval in ms (default: 60000) |
 
 ---
 
@@ -371,6 +373,11 @@ SSL is handled by Traefik via Let's Encrypt — do not manage certs manually.
 
 The CI pipeline in `.github/workflows/ci.yml` also builds and pushes to GHCR,
 but the production deploy is triggered from Dokploy, not CI.
+
+The subscription keeper runs as a separate Docker service (`keeper` in
+`docker-compose.yml`, built from `infra/docker/Dockerfile.keeper`). It needs
+a funded wallet (`KEEPER_PRIVATE_KEY`) to pay gas for `processRenewal()` calls.
+On Base, gas is fractions of a cent, so the keeper wallet needs minimal ETH.
 
 ### Deployment Pitfalls — Lessons Learned
 
@@ -418,29 +425,53 @@ See `docs/` for the full curl command.
 
 ---
 
-## Subscription System Context (Phase 4)
+## Subscription System Context (Phase 4 — complete)
 
 **Design decision: Pull-payment model** was chosen over Sablier v2. Simpler,
 more flexible, and gives subscribers full control of their allowance.
 
-### What's built:
+### Contract
 - `SubscriptionManager.sol` deployed + verified on Base Sepolia
-- `useSubscription.ts` — 4 hooks: `useSubscribe`, `useSubscriptionCancel`,
-  `useSubscriptionAllowance`, `useExistingSubscription`
+- `processRenewal(subscriptionId)` is callable by anyone (designed for keeper bots)
+- Pending plan changes (amount/period) are staged and applied at next renewal
+
+### Frontend hooks (`useSubscription.ts`)
+- `useSubscribe` — create subscription (first payment pulled immediately)
+- `useSubscriptionCancel` — cancel an active subscription
+- `useSubscriptionAllowance` — check + approve ERC-20 allowance for SubMgr
+- `useExistingSubscription` — find active sub from sender→creator (used in SubscribeForm)
+- `useCreatorSubscriptions` — batch-fetch incoming subs for a creator (uses `usePublicClient`)
+- `useSubscriberSubscriptions` — batch-fetch all subs for a subscriber (uses `usePublicClient`)
+- `getSubscriptionStatus()` — derives `active`/`overdue`/`cancelled` from on-chain data + current time
+
+### Frontend components
 - `SubscribeForm.tsx` — ERC-20 token selector (no native ETH), period picker
   (weekly=604800s, monthly=2592000s, yearly=31536000s), approve+subscribe flow,
   existing sub detection with cancel
+- `SubscriptionDashboard.tsx` — creator's incoming subscriptions with status badges
+  and next-renewal times (mounted in creator dashboard)
+- `/subscriber/dashboard` — subscriber's own subs list with cancel confirmation flow
 - Subscribe tab enabled in `PaymentModeSelector.tsx`
+- "My Subs" link in Header for all authenticated users
 - Full ABI in `contracts.ts` as `subscriptionManagerAbi`
 
-### What remains:
-- **Keeper automation** — off-chain service to call `processRenewal(subscriptionId)`
-  when `block.timestamp >= nextPaymentTimestamp`. Options: Gelato Automate or
-  Chainlink Automation. Needs to enumerate active subscriptions and batch renewals.
-- **Subscription status display** — show active/expired/cancelled state on creator
-  pages and dashboard
-- **Subscriber dashboard** — `/subscriber/dashboard` or similar, listing active
-  subs with cancel/update ability
+### Keeper service (`packages/keeper`)
+- Standalone Node.js service using viem (not wagmi — server-side)
+- Iterates all subscription IDs (0 to `nextSubscriptionId`), reads each,
+  calls `processRenewal()` for any that are active and overdue
+- Runs on a configurable interval (default 60s) via `setInterval`
+- Failures on individual renewals (insufficient balance/allowance) are logged
+  and skipped — does not halt the entire sweep
+- Deployed as a Docker service alongside the web app (`infra/docker/Dockerfile.keeper`)
+- Requires: `KEEPER_PRIVATE_KEY` (funded wallet for gas), `KEEPER_RPC_URL`,
+  `SUBSCRIPTION_MANAGER_ADDRESS`
+
+### Batch-read pattern
+For hooks that need to read multiple subscriptions by ID, the pattern is:
+1. `useReadContract` to get the ID array (`getSubscriptionsByCreator`/`getSubscriptionsBySubscriber`)
+2. `useQuery` + `usePublicClient().readContract()` to batch-fetch each detail
+3. Cap at 50 most recent IDs, `refetchInterval: 30_000`
+This avoids importing `@wagmi/core` directly (which is a transitive dep only).
 
 ---
 
