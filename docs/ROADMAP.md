@@ -214,12 +214,12 @@ testnet. This phase deploys to Base mainnet with production infrastructure._
 
 ### Infrastructure
 
-- [ ] Production RPC configuration (Alchemy/Infura with proper rate limits)
-- [ ] Update `NEXT_PUBLIC_DEFAULT_CHAIN_ID` to `8453` in production env
-- [ ] Update `NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS` and `NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS` with mainnet addresses
+- [x] Production RPC configuration (Infura Base mainnet)
+- [x] Update `NEXT_PUBLIC_DEFAULT_CHAIN_ID` to `8453` in production env
+- [x] Update `NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS` and `NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS` with mainnet addresses
 - [x] Fix docker-compose: add missing build args (`NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS`, `NEXT_PUBLIC_PINATA_GATEWAY_URL`)
 - [x] Fix docker-compose health check: use `127.0.0.1` instead of `localhost` (IPv6 resolution issue with Alpine wget)
-- [ ] Deploy keeper to mainnet — update `KEEPER_RPC_URL`, `SUBSCRIPTION_MANAGER_ADDRESS`, `KEEPER_CHAIN_ID` to mainnet values
+- [x] Deploy keeper to mainnet — update `KEEPER_RPC_URL`, `SUBSCRIPTION_MANAGER_ADDRESS`, `KEEPER_CHAIN_ID` to mainnet values
 - [ ] Fund keeper wallet on Base mainnet (minimal ETH for gas)
 
 ### Smoke Testing (mainnet)

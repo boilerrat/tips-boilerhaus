@@ -54,6 +54,13 @@ export interface UseTipHistoryResult {
 const BLOCK_RANGE = BigInt(302_400)
 
 /**
+ * Maximum block range per getLogs request.
+ * Infura and many RPC providers limit eth_getLogs to ~10k blocks on Base.
+ * We chunk requests to stay within this limit.
+ */
+const MAX_CHUNK_SIZE = BigInt(9_999)
+
+/**
  * Fetch tip history for a given address.
  *
  * @param address - The recipient address to fetch tips for.
@@ -80,17 +87,26 @@ export function useTipHistory(
       const currentBlock = await publicClient.getBlockNumber()
       const fromBlock = currentBlock > BLOCK_RANGE ? currentBlock - BLOCK_RANGE : BigInt(0)
 
-      // Fetch TipReceived events filtered by the indexed parameter
-      const logs = await publicClient.getContractEvents({
-        address: REGISTRY_ADDRESS,
-        abi: creatorRegistryAbi,
-        eventName: 'TipReceived',
-        args: direction === 'received'
-          ? { recipient: address }
-          : { sender: address },
-        fromBlock,
-        toBlock: currentBlock,
-      })
+      // Chunk getLogs requests to stay within RPC provider limits
+      const eventArgs = direction === 'received'
+        ? { recipient: address }
+        : { sender: address }
+
+      const allLogs = []
+      for (let start = fromBlock; start <= currentBlock; start += MAX_CHUNK_SIZE + BigInt(1)) {
+        const end = start + MAX_CHUNK_SIZE > currentBlock ? currentBlock : start + MAX_CHUNK_SIZE
+        const chunkLogs = await publicClient.getContractEvents({
+          address: REGISTRY_ADDRESS,
+          abi: creatorRegistryAbi,
+          eventName: 'TipReceived',
+          args: eventArgs,
+          fromBlock: start,
+          toBlock: end,
+        })
+        allLogs.push(...chunkLogs)
+      }
+
+      const logs = allLogs
 
       if (logs.length === 0) return []
 
