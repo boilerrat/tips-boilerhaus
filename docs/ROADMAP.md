@@ -207,10 +207,10 @@ testnet. This phase deploys to Base mainnet with production infrastructure._
 
 ### Contract Deployment
 
-- [ ] Deploy CreatorRegistry to Base mainnet (via `scripts/Deploy.s.sol` with mainnet RPC)
-- [ ] Deploy SubscriptionManager to Base mainnet (via `scripts/DeploySubscriptionManager.s.sol` with mainnet RPC)
-- [ ] Verify both contracts on Basescan (`evm_version = "paris"`, `forge flatten`)
-- [ ] Record mainnet contract addresses in `.env.example` comments
+- [x] Deploy CreatorRegistry to Base mainnet — `0x5fb3bBEE3AB0B21c21126C66d9bba424F2ff44ef`
+- [x] Deploy SubscriptionManager to Base mainnet — `0x1F81679cdcb90dF123a2938192ee114086170E66`
+- [x] Verify both contracts on Basescan (`evm_version = "paris"`)
+- [x] Record mainnet contract addresses in `.env.example` comments
 
 ### Infrastructure
 

@@ -23,8 +23,8 @@ remappings = ["@openzeppelin/=lib/openzeppelin-contracts/"]
 runs = 1000
 
 [rpc_endpoints]
-base = "${BASE_RPC_URL}"
-base_sepolia = "${BASE_SEPOLIA_RPC_URL}"
+base = "${NEXT_PUBLIC_BASE_RPC_URL}"
+base_sepolia = "${NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL}"
 
 [etherscan]
 base = { key = "${BASESCAN_API_KEY}", url = "https://api.etherscan.io/v2/api?chainid=8453" }

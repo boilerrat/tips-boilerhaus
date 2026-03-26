@@ -172,7 +172,8 @@ already fractions of a cent.
 ## Existing Contracts & On-Chain Architecture
 
 ### CreatorRegistry.sol (deployed)
-- **Address (Base Sepolia):** `0xd9e883c4a8340fF4138d4fE229B05445fAaE0971`
+- **Address (Base mainnet):** `0x5fb3bBEE3AB0B21c21126C66d9bba424F2ff44ef` (feeBps=100, feeRecipient=Safe)
+- **Address (Base Sepolia):** `0xd9e883c4a8340fF4138d4fE229B05445fAaE0971` (feeBps=0)
 - **Functions:** `register()`, `updateProfile()`, `deactivate()`, `reactivate()`,
   `getCreator()`, `tip()`
 - **Events:** `CreatorRegistered`, `CreatorUpdated`, `CreatorDeactivated`,
@@ -186,7 +187,8 @@ already fractions of a cent.
   the `PaymentTier.mode` field)
 
 ### SubscriptionManager.sol (deployed)
-- **Address (Base Sepolia):** `0xD77A14d390F6BC08F6aB720787c046F8b2850114`
+- **Address (Base mainnet):** `0x1F81679cdcb90dF123a2938192ee114086170E66` (feeBps=100, feeRecipient=Safe)
+- **Address (Base Sepolia):** `0xD77A14d390F6BC08F6aB720787c046F8b2850114` (feeBps=0)
 - **Functions:** `subscribe(creator, token, amountPerPeriod, periodSeconds)`,
   `cancel(subscriptionId)`, `updateSubscription(subscriptionId, newAmount, newPeriod)`,
   `processRenewal(subscriptionId)`, `getSubscription(id)`,
