@@ -201,9 +201,9 @@ testnet. This phase deploys to Base mainnet with production infrastructure._
 
 ### Pre-deploy Decisions
 
-- [ ] Decide mainnet fee configuration (feeBps) for CreatorRegistry and SubscriptionManager — both deployed with `0` on testnet
-- [ ] Decide fee recipient address for mainnet (EOA or multisig)
-- [ ] Decide keeper wallet strategy — dedicated EOA, fund level, alert threshold
+- [x] Decide mainnet fee configuration (feeBps) for CreatorRegistry and SubscriptionManager — 100 bps (1%) for both
+- [x] Decide fee recipient address for mainnet — Safe multisig at `0xc0903d14641084CE3Efa448a3e832e9d97A02CCf`
+- [x] Decide keeper wallet strategy — dedicated EOA at `0x10D325DD63e3B9F02CbAAC1F00d3eA9933Caafb7`, fund ~0.01 ETH on Base mainnet
 
 ### Contract Deployment
 
@@ -217,8 +217,8 @@ testnet. This phase deploys to Base mainnet with production infrastructure._
 - [ ] Production RPC configuration (Alchemy/Infura with proper rate limits)
 - [ ] Update `NEXT_PUBLIC_DEFAULT_CHAIN_ID` to `8453` in production env
 - [ ] Update `NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS` and `NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS` with mainnet addresses
-- [ ] Fix docker-compose: add missing build args (`NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS`, `NEXT_PUBLIC_PINATA_GATEWAY_URL`)
-- [ ] Fix docker-compose health check: use `127.0.0.1` instead of `localhost` (IPv6 resolution issue with Alpine wget)
+- [x] Fix docker-compose: add missing build args (`NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS`, `NEXT_PUBLIC_PINATA_GATEWAY_URL`)
+- [x] Fix docker-compose health check: use `127.0.0.1` instead of `localhost` (IPv6 resolution issue with Alpine wget)
 - [ ] Deploy keeper to mainnet — update `KEEPER_RPC_URL`, `SUBSCRIPTION_MANAGER_ADDRESS`, `KEEPER_CHAIN_ID` to mainnet values
 - [ ] Fund keeper wallet on Base mainnet (minimal ETH for gas)
 

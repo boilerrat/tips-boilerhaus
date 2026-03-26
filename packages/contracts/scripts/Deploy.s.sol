@@ -8,38 +8,39 @@ import {CreatorRegistry} from "../src/CreatorRegistry.sol";
  * @title Deploy
  * @notice Foundry deployment script for CreatorRegistry.
  *
- * Usage (Base Sepolia):
+ * Usage (Base mainnet):
+ *   FEE_RECIPIENT=0x... FEE_BPS=100 forge script scripts/Deploy.s.sol \
+ *     --rpc-url base_mainnet \
+ *     --broadcast \
+ *     --verify
+ *
+ * Usage (Base Sepolia, zero fee):
  *   forge script scripts/Deploy.s.sol \
  *     --rpc-url base_sepolia \
  *     --broadcast \
  *     --verify
  *
  * Requires DEPLOYER_PRIVATE_KEY in env.
+ * Optional: FEE_RECIPIENT (defaults to deployer), FEE_BPS (defaults to 0).
  */
 contract Deploy is Script {
     function run() external {
         uint256 deployerKey = vm.envUint("DEPLOYER_PRIVATE_KEY");
         address deployer = vm.addr(deployerKey);
 
+        // Fee recipient defaults to deployer if not set
+        address feeRecipient = vm.envOr("FEE_RECIPIENT", deployer);
+        uint256 feeBps = vm.envOr("FEE_BPS", uint256(0));
+
         console2.log("Deployer:", deployer);
         console2.log("Chain ID:", block.chainid);
+        console2.log("Fee recipient:", feeRecipient);
+        console2.log("Fee BPS:", feeBps);
 
         vm.startBroadcast(deployerKey);
 
-        // Deploy with deployer as fee recipient, zero fee for Phase 1
-        CreatorRegistry registry = new CreatorRegistry(deployer, 0);
+        CreatorRegistry registry = new CreatorRegistry(feeRecipient, feeBps);
         console2.log("CreatorRegistry deployed at:", address(registry));
-
-        // Smoke test: register the deployer as a creator to confirm events emit
-        CreatorRegistry.PaymentTier[] memory tiers = new CreatorRegistry.PaymentTier[](1);
-        tiers[0] = CreatorRegistry.PaymentTier({
-            label: "Coffee",
-            amountWei: 0.001 ether,
-            tokenAddress: address(0),
-            mode: CreatorRegistry.PaymentMode.TIP
-        });
-        registry.register("bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi", tiers);
-        console2.log("Smoke test: deployer registered as creator");
 
         vm.stopBroadcast();
     }

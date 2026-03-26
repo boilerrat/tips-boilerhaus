@@ -204,20 +204,10 @@ already fractions of a cent.
 ### Superfluid (external, no custom contracts)
 - **CFAv1Forwarder:** Canonical singleton at `0xcfA132E353cB4E398080B9700609bb008eceB125`
   (same on all chains). Uses `setFlowrate(token, receiver, flowrate)`.
-- **Super Token addresses (Base mainnet):**
-  - ETHx: `0x46fd5cfB4c12D87acD3a13e92BAa53240C661D93`
-  - USDCx: `0xD04383398dD2426297da660F9CCA3d439AF9ce1b` (underlying USDC: `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`)
-  - DAIx: `0x708169c8C87563Ce904E0a7F3BFC1F3b0b767f41` (underlying DAI: `0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb`)
-- **Super Token addresses (Base Sepolia):**
-  - ETHx: `0x143ea239159155B408e71CDbE836e8CFD6766732`
-- **Subgraph:** `subgraph-endpoints.superfluid.dev/base-mainnet/protocol-v1`
+- **Token addresses:** See `apps/web/src/lib/superfluid.ts` (Super Tokens) and
+  `apps/web/src/lib/tokens.ts` (ERC-20s) — code is the source of truth.
 - **Buffer deposit:** ~4 hours of streaming locked when opening a stream
 - **SDK:** `@sfpro/sdk` (devDependency, provides typed ABIs + chain-indexed addresses)
-
-### ERC-20 Token Addresses (Base mainnet)
-- USDC: `0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913` (6 decimals)
-- DAI: `0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb` (18 decimals)
-- USDC (Base Sepolia): `0x036CbD53842c5426634e7929541eC2318f3dCF7e` (6 decimals)
 
 ---
 
@@ -425,53 +415,19 @@ See `docs/` for the full curl command.
 
 ---
 
-## Subscription System Context (Phase 4 — complete)
+## Key Design Decisions (non-obvious, not derivable from code)
 
-**Design decision: Pull-payment model** was chosen over Sablier v2. Simpler,
-more flexible, and gives subscribers full control of their allowance.
-
-### Contract
-- `SubscriptionManager.sol` deployed + verified on Base Sepolia
-- `processRenewal(subscriptionId)` is callable by anyone (designed for keeper bots)
-- Pending plan changes (amount/period) are staged and applied at next renewal
-
-### Frontend hooks (`useSubscription.ts`)
-- `useSubscribe` — create subscription (first payment pulled immediately)
-- `useSubscriptionCancel` — cancel an active subscription
-- `useSubscriptionAllowance` — check + approve ERC-20 allowance for SubMgr
-- `useExistingSubscription` — find active sub from sender→creator (used in SubscribeForm)
-- `useCreatorSubscriptions` — batch-fetch incoming subs for a creator (uses `usePublicClient`)
-- `useSubscriberSubscriptions` — batch-fetch all subs for a subscriber (uses `usePublicClient`)
-- `getSubscriptionStatus()` — derives `active`/`overdue`/`cancelled` from on-chain data + current time
-
-### Frontend components
-- `SubscribeForm.tsx` — ERC-20 token selector (no native ETH), period picker
-  (weekly=604800s, monthly=2592000s, yearly=31536000s), approve+subscribe flow,
-  existing sub detection with cancel
-- `SubscriptionDashboard.tsx` — creator's incoming subscriptions with status badges
-  and next-renewal times (mounted in creator dashboard)
-- `/subscriber/dashboard` — subscriber's own subs list with cancel confirmation flow
-- Subscribe tab enabled in `PaymentModeSelector.tsx`
-- "My Subs" link in Header for all authenticated users
-- Full ABI in `contracts.ts` as `subscriptionManagerAbi`
-
-### Keeper service (`packages/keeper`)
-- Standalone Node.js service using viem (not wagmi — server-side)
-- Iterates all subscription IDs (0 to `nextSubscriptionId`), reads each,
-  calls `processRenewal()` for any that are active and overdue
-- Runs on a configurable interval (default 60s) via `setInterval`
-- Failures on individual renewals (insufficient balance/allowance) are logged
-  and skipped — does not halt the entire sweep
-- Deployed as a Docker service alongside the web app (`infra/docker/Dockerfile.keeper`)
-- Requires: `KEEPER_PRIVATE_KEY` (funded wallet for gas), `KEEPER_RPC_URL`,
-  `SUBSCRIPTION_MANAGER_ADDRESS`
-
-### Batch-read pattern
-For hooks that need to read multiple subscriptions by ID, the pattern is:
-1. `useReadContract` to get the ID array (`getSubscriptionsByCreator`/`getSubscriptionsBySubscriber`)
-2. `useQuery` + `usePublicClient().readContract()` to batch-fetch each detail
-3. Cap at 50 most recent IDs, `refetchInterval: 30_000`
-This avoids importing `@wagmi/core` directly (which is a transitive dep only).
+- **Subscription: Pull-payment model** chosen over Sablier v2. Simpler, more
+  flexible, gives subscribers full control of their allowance.
+- **`processRenewal()` is callable by anyone** — designed for keeper bots,
+  no access control.
+- **Pending plan changes** (amount/period) are staged and applied at next renewal,
+  not immediately.
+- **Batch-read pattern:** For hooks reading multiple subscriptions by ID:
+  `useReadContract` for ID array -> `useQuery` + `usePublicClient().readContract()`
+  for details. Cap at 50 IDs, `refetchInterval: 30_000`. Avoids importing
+  `@wagmi/core` directly (transitive dep only).
+- **Keeper uses viem directly** (not wagmi) — it's server-side Node.js.
 
 ---
 

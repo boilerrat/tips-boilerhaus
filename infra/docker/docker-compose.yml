@@ -22,10 +22,12 @@ services:
         # NEXT_PUBLIC_* vars are baked at build time.
         # Provide these in .env or via Dokploy env — never hardcode here.
         NEXT_PUBLIC_PRIVY_APP_ID: ${NEXT_PUBLIC_PRIVY_APP_ID}
-        NEXT_PUBLIC_DEFAULT_CHAIN_ID: ${NEXT_PUBLIC_DEFAULT_CHAIN_ID:-84532}
+        NEXT_PUBLIC_DEFAULT_CHAIN_ID: ${NEXT_PUBLIC_DEFAULT_CHAIN_ID:-8453}
         NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS: ${NEXT_PUBLIC_REGISTRY_CONTRACT_ADDRESS:-}
+        NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS: ${NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS:-}
         NEXT_PUBLIC_BASE_RPC_URL: ${NEXT_PUBLIC_BASE_RPC_URL:-}
         NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL: ${NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL:-}
+        NEXT_PUBLIC_PINATA_GATEWAY_URL: ${NEXT_PUBLIC_PINATA_GATEWAY_URL:-}
     image: tips-web:${GIT_SHA:-dev}
     restart: unless-stopped
     networks:
@@ -41,7 +43,7 @@ services:
       # Security headers middleware (defined in Traefik static config)
       - "traefik.http.routers.tips-web.middlewares=security-headers@file"
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -59,10 +61,10 @@ services:
     restart: unless-stopped
     environment:
       KEEPER_PRIVATE_KEY: ${KEEPER_PRIVATE_KEY}
-      KEEPER_RPC_URL: ${KEEPER_RPC_URL:-${NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL:-}}
+      KEEPER_RPC_URL: ${KEEPER_RPC_URL:-${NEXT_PUBLIC_BASE_RPC_URL:-}}
       SUBSCRIPTION_MANAGER_ADDRESS: ${NEXT_PUBLIC_SUBSCRIPTION_MANAGER_ADDRESS:-}
       KEEPER_INTERVAL_MS: ${KEEPER_INTERVAL_MS:-60000}
-      KEEPER_CHAIN_ID: ${NEXT_PUBLIC_DEFAULT_CHAIN_ID:-84532}
+      KEEPER_CHAIN_ID: ${NEXT_PUBLIC_DEFAULT_CHAIN_ID:-8453}
     networks:
       - traefik_public
 
