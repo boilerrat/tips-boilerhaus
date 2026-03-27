@@ -13,18 +13,20 @@
 
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect, useRef } from 'react'
 import { parseUnits, formatUnits, type Address, zeroAddress } from 'viem'
 import {
   useWriteContract,
   useWaitForTransactionReceipt,
   useAccount,
   useChainId,
+  useSignMessage,
 } from 'wagmi'
 import { usePrivy } from '@privy-io/react-auth'
 import { creatorRegistryAbi, REGISTRY_ADDRESS } from '@/lib/contracts'
 import { getTokensForChain } from '@/lib/tokens'
 import { ipfsToHttpUrl, isIpfsUri } from '@/lib/ipfs'
+import { buildUploadAuthHeaders, createUploadAuthMessage } from '@/lib/uploadAuth'
 import type { CreatorMetadata, PaymentTier, PaymentMode } from '@tips/shared'
 
 /** Form mode — determines which contract function to call. */
@@ -94,6 +96,8 @@ export function CreatorProfileForm({
   const { address: senderAddress } = useAccount()
   const chainId = useChainId()
   const tokens = useMemo(() => getTokensForChain(chainId), [chainId])
+  const previousChainId = useRef(chainId)
+  const { signMessageAsync } = useSignMessage()
 
   // --- Metadata state ---
   const [displayName, setDisplayName] = useState(initialMetadata?.displayName ?? '')
@@ -115,12 +119,12 @@ export function CreatorProfileForm({
     initialTiers?.map((t) => tierToFormState(t, tokens)) ?? [],
   )
 
-  // Reset tier token indices when chain changes (token list may differ)
-  const [prevChainId, setPrevChainId] = useState(chainId)
-  if (chainId !== prevChainId) {
-    setPrevChainId(chainId)
+  // Reset tier token indices when chain changes (token list may differ).
+  useEffect(() => {
+    if (previousChainId.current === chainId) return
+    previousChainId.current = chainId
     setTiers(initialTiers?.map((t) => tierToFormState(t, tokens)) ?? [])
-  }
+  }, [chainId, initialTiers, tokens])
 
   // --- Upload / submit state ---
   const [isUploading, setIsUploading] = useState(false)
@@ -213,6 +217,18 @@ export function CreatorProfileForm({
     setIsUploading(true)
 
     try {
+      const authTimestamp = Date.now()
+      const authMessage = createUploadAuthMessage({
+        address: senderAddress,
+        timestamp: authTimestamp,
+      })
+      const authSignature = await signMessageAsync({ message: authMessage })
+      const uploadAuthHeaders = buildUploadAuthHeaders({
+        address: senderAddress,
+        timestamp: authTimestamp,
+        signature: authSignature,
+      })
+
       // Step 1: Upload avatar if a new file is selected
       let avatarIpfsUrl = existingAvatarUrl || undefined
 
@@ -222,6 +238,7 @@ export function CreatorProfileForm({
 
         const avatarRes = await fetch('/api/ipfs/pin', {
           method: 'POST',
+          headers: uploadAuthHeaders,
           body: formData,
         })
 
@@ -247,7 +264,10 @@ export function CreatorProfileForm({
 
       const metadataRes = await fetch('/api/ipfs/pin', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...uploadAuthHeaders,
+        },
         body: JSON.stringify(metadata),
       })
 
@@ -309,6 +329,7 @@ export function CreatorProfileForm({
     tiers,
     tokens,
     mode,
+    signMessageAsync,
     writeContract,
   ])
 

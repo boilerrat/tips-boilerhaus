@@ -11,7 +11,7 @@
 
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { erc20Abi, maxUint256, parseUnits } from 'viem'
 import {
   useWriteContract,
@@ -50,6 +50,7 @@ interface UseWrapSuperTokenResult {
 
 export function useWrapSuperToken(
   superToken: SuperTokenConfig | undefined,
+  wrapAmount: string,
 ): UseWrapSuperTokenResult {
   const { address: account } = useAccount()
   const [step, setStep] = useState<WrapStep>('idle')
@@ -143,10 +144,23 @@ export function useWrapSuperToken(
   }, [isWrapConfirmed, refetchSuperBalance])
 
   // --- Derived state ---
+  const requiredAllowance = useMemo(() => {
+    if (!superToken || superToken.isNativeWrapper) return undefined
+    const trimmed = wrapAmount.trim()
+    if (!trimmed) return undefined
+
+    try {
+      return parseUnits(trimmed, superToken.underlyingDecimals)
+    } catch {
+      return undefined
+    }
+  }, [superToken, wrapAmount])
+
   const needsApproval =
     !!superToken &&
     !superToken.isNativeWrapper &&
-    (allowance === undefined || allowance === 0n)
+    requiredAllowance !== undefined &&
+    (allowance === undefined || allowance < requiredAllowance)
 
   const approve = useCallback(() => {
     if (!superToken?.underlyingAddress || !superToken.address) return

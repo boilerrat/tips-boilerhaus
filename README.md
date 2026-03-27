@@ -20,8 +20,9 @@ Crypto-native creator funding protocol. One-time tips, recurring subscriptions, 
 
 | Layer | Technology |
 |---|---|
-| Frontend | Next.js 14 (App Router), wagmi v2, RainbowKit v2, Tailwind CSS |
+| Frontend | Next.js 14 (App Router), Privy, wagmi v2, Tailwind CSS |
 | Contracts | Solidity 0.8.24, Foundry, deployed on Base |
+| Automation | Node.js keeper service for subscription renewals |
 | Streaming | Superfluid Protocol (CFA) |
 | Infrastructure | Docker, Traefik, OVH VPS (boilerhaus.org) |
 | CI/CD | GitHub Actions → GHCR → SSH deploy |
@@ -33,6 +34,7 @@ Crypto-native creator funding protocol. One-time tips, recurring subscriptions, 
 ```
 apps/web          — Next.js frontend
 packages/contracts — Solidity smart contracts (Foundry)
+packages/keeper   — Subscription renewal keeper
 packages/shared   — Shared TypeScript types
 infra/            — Docker and Traefik configuration
 docs/             — Architecture and development documentation

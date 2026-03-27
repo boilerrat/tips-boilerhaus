@@ -249,8 +249,8 @@ already fractions of a cent.
   viem calls in components.
 - TanStack Query manages all async state. Do not use `useEffect` + `useState` for
   data fetching.
-- Privy is the wallet provider (NOT RainbowKit — docs may still reference it,
-  but the code uses Privy). `@privy-io/wagmi` wraps wagmi config creation.
+- Privy is the wallet provider (not RainbowKit). `@privy-io/wagmi` wraps wagmi
+  config creation.
 - Provider tree order: `PrivyProvider` > `QueryClientProvider` > `WagmiProvider`.
 - Layout guards: `{env.NEXT_PUBLIC_PRIVY_APP_ID && <Header />}` pattern prevents
   crashes during static page generation.

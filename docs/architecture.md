@@ -63,8 +63,8 @@ Contracts are written in Solidity 0.8.24 and developed with Foundry. Deployment 
 
 The web app is a Next.js 14 application using the App Router. Key libraries:
 
+- **Privy** — wallet authentication, embedded wallets, and account linking
 - **wagmi v2 + viem** — type-safe Ethereum interactions and contract reads/writes
-- **RainbowKit v2** — wallet connection UI with multi-wallet support
 - **TanStack Query** — async state management for on-chain data fetching
 - **Tailwind CSS** — utility-first styling
 - **IBM Plex Mono / Inter** — typography (monospace for addresses and code, sans-serif for UI copy)
@@ -91,7 +91,7 @@ Base is the primary deployment target for the following reasons: transaction fee
 ## Data Flow
 
 ```
-User connects wallet (RainbowKit)
+User connects wallet (Privy)
         │
         ▼
 /pay/[recipient] page resolves ENS → address

@@ -6,7 +6,7 @@
 - pnpm 9+ (`npm install -g pnpm`)
 - Foundry (`curl -L https://foundry.paradigm.xyz | bash && foundryup`)
 - Docker and Docker Compose (for production testing)
-- A WalletConnect project ID from [cloud.walletconnect.com](https://cloud.walletconnect.com)
+- A Privy app ID from [dashboard.privy.io](https://dashboard.privy.io)
 
 ---
 

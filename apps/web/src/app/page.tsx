@@ -21,7 +21,7 @@ const FEATURES = [
       </svg>
     ),
     title: 'One-time tips',
-    desc: 'Send ETH directly. No middlemen, no fees.',
+    desc: 'Send ETH or tokens wallet to wallet on Base.',
   },
   {
     icon: (

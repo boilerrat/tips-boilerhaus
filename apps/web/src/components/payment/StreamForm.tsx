@@ -95,6 +95,9 @@ export function StreamForm({ recipientAddress, displayName }: StreamFormProps) {
   )
 
   // --- Wrapping ---
+  const [showWrapUI, setShowWrapUI] = useState(false)
+  const [wrapAmount, setWrapAmount] = useState('')
+
   const {
     step: wrapStep,
     needsApproval: wrapNeedsApproval,
@@ -106,10 +109,7 @@ export function StreamForm({ recipientAddress, displayName }: StreamFormProps) {
     error: wrapError,
     reset: resetWrap,
     isPending: isWrapPending,
-  } = useWrapSuperToken(selectedToken)
-
-  const [showWrapUI, setShowWrapUI] = useState(false)
-  const [wrapAmount, setWrapAmount] = useState('')
+  } = useWrapSuperToken(selectedToken, wrapAmount)
 
   const handleWrap = useCallback(() => {
     if (!selectedToken || !wrapAmount.trim()) return

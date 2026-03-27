@@ -15,6 +15,11 @@ import { PinataSDK } from 'pinata'
 import { z } from 'zod'
 
 import { env } from '@/env'
+import {
+  enforceRateLimit,
+  enforceSameOrigin,
+  verifyUploadAuth,
+} from '@/lib/apiSecurity'
 
 /** Matches the CreatorMetadata interface in packages/shared. */
 const creatorMetadataSchema = z.object({
@@ -48,6 +53,20 @@ export async function POST(request: NextRequest) {
   const contentType = request.headers.get('content-type') ?? ''
 
   try {
+    const originError = enforceSameOrigin(request)
+    if (originError) return originError
+
+    const rateLimitError = enforceRateLimit({
+      request,
+      key: 'ipfs-pin',
+      limit: 12,
+      windowMs: 5 * 60 * 1000,
+    })
+    if (rateLimitError) return rateLimitError
+
+    const uploadAuth = await verifyUploadAuth(request)
+    if (!uploadAuth.ok) return uploadAuth.response
+
     if (contentType.includes('application/json')) {
       return await handleJsonPin(request)
     }

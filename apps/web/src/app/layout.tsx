@@ -4,7 +4,7 @@ import { IBM_Plex_Mono, Inter } from 'next/font/google'
 import { PrivyProvider } from '@privy-io/react-auth'
 import { WagmiProvider } from '@privy-io/wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { wagmiConfig } from '@/lib/wagmi'
+import { DEFAULT_CHAIN_ID, wagmiConfig } from '@/lib/wagmi'
 import { env } from '@/env'
 import { base, baseSepolia } from '@privy-io/chains'
 import { Header } from '@/components/Header'
@@ -38,6 +38,8 @@ function Providers({ children }: { children: React.ReactNode }) {
     return <>{children}</>
   }
 
+  const defaultChain = DEFAULT_CHAIN_ID === 8453 ? base : baseSepolia
+
   return (
     <PrivyProvider
       appId={env.NEXT_PUBLIC_PRIVY_APP_ID}
@@ -46,7 +48,7 @@ function Providers({ children }: { children: React.ReactNode }) {
           theme: 'dark',
           accentColor: '#ffffff',
         },
-        defaultChain: baseSepolia,
+        defaultChain,
         supportedChains: [base, baseSepolia],
         embeddedWallets: {
           ethereum: {

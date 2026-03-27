@@ -16,6 +16,7 @@ import { z } from 'zod'
 import crypto from 'crypto'
 
 import { env } from '@/env'
+import { enforceRateLimit, enforceSameOrigin } from '@/lib/apiSecurity'
 
 const TOKEN_URL_HOST = 'api.developer.coinbase.com'
 const TOKEN_URL_PATH = '/onramp/v1/token'
@@ -61,6 +62,17 @@ async function buildCdpJwt(): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
+    const originError = enforceSameOrigin(request)
+    if (originError) return originError
+
+    const rateLimitError = enforceRateLimit({
+      request,
+      key: 'onramp-session',
+      limit: 20,
+      windowMs: 5 * 60 * 1000,
+    })
+    if (rateLimitError) return rateLimitError
+
     if (!env.COINBASE_ONRAMP_API_KEY || !env.COINBASE_ONRAMP_API_SECRET) {
       return NextResponse.json(
         { error: 'Coinbase Onramp is not configured on this server.' },

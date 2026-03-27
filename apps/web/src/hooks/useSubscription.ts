@@ -307,6 +307,7 @@ export function useExistingSubscription(
   creatorAddress: `0x${string}` | undefined,
 ) {
   const { address: senderAddress } = useAccount()
+  const publicClient = usePublicClient()
 
   // Get all subscription IDs for the sender
   const { data: subIds } = useReadContract({
@@ -329,41 +330,39 @@ export function useExistingSubscription(
     return ids.slice(-10).reverse()
   }, [subIds])
 
-  // Read first subscription (we'll chain through them)
-  const { data: sub0 } = useReadContract({
-    address: SUBSCRIPTION_MANAGER_ADDRESS ?? zeroAddress,
-    abi: subscriptionManagerAbi,
-    functionName: 'getSubscription',
-    args: [idsToCheck[0]!],
-    query: { enabled: idsToCheck.length > 0 },
-  })
+  const { data: subscriptions = [] } = useQuery({
+    queryKey: ['existingSubscription', senderAddress, creatorAddress, idsToCheck.map(String)],
+    queryFn: async () => {
+      const managerAddress = SUBSCRIPTION_MANAGER_ADDRESS
+      if (!publicClient || !managerAddress || idsToCheck.length === 0) {
+        return []
+      }
 
-  const { data: sub1 } = useReadContract({
-    address: SUBSCRIPTION_MANAGER_ADDRESS ?? zeroAddress,
-    abi: subscriptionManagerAbi,
-    functionName: 'getSubscription',
-    args: [idsToCheck[1]!],
-    query: { enabled: idsToCheck.length > 1 },
-  })
+      const results = await Promise.all(
+        idsToCheck.map((id) =>
+          publicClient.readContract({
+            address: managerAddress,
+            abi: subscriptionManagerAbi,
+            functionName: 'getSubscription',
+            args: [id],
+          }),
+        ),
+      )
 
-  const { data: sub2 } = useReadContract({
-    address: SUBSCRIPTION_MANAGER_ADDRESS ?? zeroAddress,
-    abi: subscriptionManagerAbi,
-    functionName: 'getSubscription',
-    args: [idsToCheck[2]!],
-    query: { enabled: idsToCheck.length > 2 },
+      return results as SubscriptionData[]
+    },
+    enabled: !!publicClient && !!creatorAddress && idsToCheck.length > 0,
   })
 
   // Find the first active subscription to the target creator
   const activeSub = useMemo(() => {
     if (!creatorAddress) return undefined
-    const candidates = [sub0, sub1, sub2].filter(Boolean) as SubscriptionData[]
-    return candidates.find(
+    return subscriptions.find(
       (s) =>
         s.active &&
         s.creator.toLowerCase() === creatorAddress.toLowerCase(),
     )
-  }, [sub0, sub1, sub2, creatorAddress])
+  }, [subscriptions, creatorAddress])
 
   return {
     subscription: activeSub,

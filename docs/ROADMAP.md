@@ -1,6 +1,6 @@
 # Roadmap — tips.boilerhaus.org
 
-Last updated: 2026-03-25
+Last updated: 2026-03-27
 
 ---
 
@@ -242,10 +242,20 @@ testnet. This phase deploys to Base mainnet with production infrastructure._
 
 _Production quality gates — security, performance, accessibility, and test coverage._
 
+### Review-Driven Fixes (2026-03-27)
+
+- [x] Protect `/api/ipfs/pin` from anonymous abuse — creator uploads now require a fresh wallet-signed auth header and the route is rate limited
+- [x] Fix frontend production chain wiring — Privy `defaultChain` now derives from `NEXT_PUBLIC_DEFAULT_CHAIN_ID`
+- [x] Use configured RPC env vars in wagmi transports (`NEXT_PUBLIC_BASE_RPC_URL`, `NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL`) instead of relying on default `http()` transports
+- [x] Fix existing-subscription detection on `/pay/[recipient]` — hook now checks the recent subscription set instead of only the first few reads
+- [x] Fix Super Token wrap approval logic so partial ERC-20 allowances trigger re-approval when needed, not only zero allowance
+- [x] Move creator profile chain-change tier resets out of render-time state updates and into an effect-safe flow
+- [x] Add explicit protocol-fee disclosure in the UI and remove stale “no fees” product copy now that mainnet contracts are configured with 100 bps fees
+
 ### Security
 
 - [ ] Security audit of CreatorRegistry.sol and SubscriptionManager.sol
-- [ ] Rate limiting on API routes (`/api/onramp/session`, `/api/ipfs/pin`)
+- [x] Rate limiting on API routes (`/api/onramp/session`, `/api/ipfs/pin`)
 - [ ] Review Privy session handling and auth boundaries
 
 ### Accessibility & Performance
@@ -272,5 +282,7 @@ _Production quality gates — security, performance, accessibility, and test cov
 - [x] IPFS pinning service account and API key _(Pinata — prerequisite for Phase 2B)_
 - [ ] Event indexer migration (The Graph or Ponder — when `getLogs` stops scaling)
 - [ ] Database for off-chain data (tip messages, analytics) — if needed
-- [ ] Clean up docs referencing RainbowKit — code uses Privy
+- [x] Clean up docs referencing RainbowKit — code uses Privy
+- [x] Clean up docs still referencing WalletConnect and old repo structure — README/development guide now match the current Privy + keeper-based architecture
 - [ ] Keeper redundancy — failover if primary keeper instance goes down
+- [ ] Keeper scalability pass — current renewal worker scans subscriptions sequentially and waits for each renewal receipt; replace with a more scalable due-renewal strategy before larger subscriber volume

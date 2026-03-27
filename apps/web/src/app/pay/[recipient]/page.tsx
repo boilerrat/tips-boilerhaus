@@ -24,6 +24,7 @@ import { PaymentModeSelector } from '@/components/payment/PaymentModeSelector'
 import { FundWalletBanner } from '@/components/payment/FundWalletBanner'
 import { ShareButton } from '@/components/ShareButton'
 import { REGISTRY_ADDRESS } from '@/lib/contracts'
+import { env } from '@/env'
 import type { PaymentMode } from '@tips/shared'
 
 interface PayPageProps {
@@ -69,6 +70,9 @@ export default function PayPage({ params }: PayPageProps) {
     ?? (address ? `${address.slice(0, 6)}...${address.slice(-4)}` : decoded)
 
   const [paymentMode, setPaymentMode] = useState<PaymentMode>('tip')
+  const feeNotice = env.NEXT_PUBLIC_DEFAULT_CHAIN_ID === 8453
+    ? 'Base mainnet tips and subscriptions include a 1% protocol fee. Streams do not add a protocol fee.'
+    : 'Base Sepolia testnet deployment: protocol fees are disabled for tips and subscriptions.'
 
   // Only block on metadata loading when a hash is expected
   const isStillLoading = isLoadingProfile
@@ -158,6 +162,10 @@ export default function PayPage({ params }: PayPageProps) {
 
         {/* Payment mode selector */}
         <PaymentModeSelector selected={paymentMode} onSelect={setPaymentMode} />
+
+        <p className="text-zinc-500 text-xs leading-relaxed">
+          {feeNotice}
+        </p>
 
         {/* Empty wallet prompt for first-time users */}
         <FundWalletBanner />

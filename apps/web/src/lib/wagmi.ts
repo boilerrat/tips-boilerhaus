@@ -1,6 +1,7 @@
 import { createConfig } from '@privy-io/wagmi'
 import { base, baseSepolia, mainnet } from 'viem/chains'
 import { http } from 'wagmi'
+import { env } from '@/env'
 
 /**
  * Wagmi configuration for use with Privy.
@@ -18,8 +19,8 @@ export const wagmiConfig = createConfig({
   chains: [base, baseSepolia, mainnet],
   pollingInterval: 4_000,
   transports: {
-    [base.id]: http(),
-    [baseSepolia.id]: http(),
+    [base.id]: http(env.NEXT_PUBLIC_BASE_RPC_URL),
+    [baseSepolia.id]: http(env.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL),
     [mainnet.id]: http(),
   },
 })
@@ -31,3 +32,6 @@ export const SUPPORTED_CHAINS = {
 } as const
 
 export type SupportedChainId = keyof typeof SUPPORTED_CHAINS
+
+export const DEFAULT_CHAIN_ID: SupportedChainId =
+  env.NEXT_PUBLIC_DEFAULT_CHAIN_ID === base.id ? base.id : baseSepolia.id
