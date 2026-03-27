@@ -79,7 +79,7 @@ services:
       start_period: 45s
     labels:
       - traefik.enable=true
-      - traefik.docker.network=traefik_public
+      - traefik.docker.network=dokploy-network
       - traefik.http.routers.plausible.rule=Host(`plausible.boilerhaus.org`)
       - traefik.http.routers.plausible.middlewares=security-headers@file
       - traefik.http.routers.plausible.entrypoints=websecure
@@ -88,7 +88,7 @@ services:
       - traefik.http.services.plausible.loadbalancer.server.port=8000
     networks:
       - plausible_internal
-      - traefik_public
+      - dokploy-network
 
 volumes:
   db-data:
@@ -98,5 +98,5 @@ volumes:
 
 networks:
   plausible_internal:
-  traefik_public:
+  dokploy-network:
     external: true
