@@ -34,6 +34,7 @@ Why port `8000`:
 ```env
 BASE_URL=https://plausible.boilerhaus.org
 SECRET_KEY_BASE=<generate with: openssl rand -base64 48>
+TOTP_VAULT_KEY=<generate with: openssl rand -base64 32>
 HTTP_PORT=8000
 ```
 
@@ -42,6 +43,7 @@ Recommended first deploy:
 ```env
 DISABLE_REGISTRATION=false
 ENABLE_EMAIL_VERIFICATION=false
+MAILER_ADAPTER=Bamboo.Mua
 ```
 
 After creating the first admin user, tighten registration:
@@ -52,7 +54,7 @@ DISABLE_REGISTRATION=invite_only
 
 ## Email
 
-SMTP is optional. Leave the mail settings blank unless you want:
+SMTP is optional. Keep `MAILER_ADAPTER=Bamboo.Mua` unless you are configuring a different supported adapter. Leave the SMTP settings blank unless you want:
 
 - password reset emails
 - email verification
