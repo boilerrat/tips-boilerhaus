@@ -1,4 +1,5 @@
 const path = require('path')
+const { withSentryConfig } = require('@sentry/nextjs')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -20,7 +21,30 @@ const nextConfig = {
     // the standalone output. Without this, traced deps can be silently
     // omitted, causing the server to crash with MODULE_NOT_FOUND at runtime.
     outputFileTracingRoot: path.join(__dirname, '../../'),
+
+    // Required for Sentry server-side init via instrumentation.ts (Next.js 14)
+    instrumentationHook: true,
   },
 }
 
-module.exports = nextConfig
+// Wrap with Sentry only when DSN is configured — allows builds without Sentry
+const sentryConfig = process.env.NEXT_PUBLIC_SENTRY_DSN
+  ? withSentryConfig(nextConfig, {
+      // Suppress source map upload logs during build
+      silent: !process.env.CI,
+
+      // Widen client file upload for better stack traces
+      widenClientFileUpload: true,
+
+      // Tree-shake Sentry logger statements to reduce bundle size
+      disableLogger: true,
+
+      // Hide source maps from the browser bundle
+      hideSourceMaps: true,
+
+      // Route browser requests through a Next.js rewrite to avoid ad-blockers
+      tunnelRoute: '/monitoring',
+    })
+  : nextConfig
+
+module.exports = sentryConfig

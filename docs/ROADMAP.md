@@ -232,9 +232,9 @@ testnet. This phase deploys to Base mainnet with production infrastructure._
 
 ### Monitoring & Observability
 
-- [ ] Error monitoring (Sentry integration in Next.js app)
-- [ ] Keeper health monitoring — alerting if keeper stops or renewals fail
-- [ ] Basic analytics (PostHog, Plausible, or similar)
+- [x] Error monitoring (Sentry integration in Next.js app — `@sentry/nextjs`, instrumentation hook, global error boundary)
+- [x] Keeper health monitoring — HTTP health endpoint at `/health` (port 8080), sweep tracking, Docker health check
+- [x] Basic analytics (Plausible — privacy-focused, cookie-free, script-tag integration)
 
 ---
 

@@ -353,6 +353,10 @@ for which vars the app requires. If you add a new env var:
 | `KEEPER_PRIVATE_KEY` | Keeper | 0x-prefixed private key for renewal tx gas |
 | `KEEPER_RPC_URL` | Keeper | RPC endpoint (defaults to Base Sepolia RPC) |
 | `KEEPER_INTERVAL_MS` | Keeper | Sweep interval in ms (default: 60000) |
+| `KEEPER_HEALTH_PORT` | Keeper | Health endpoint port (default: 8080) |
+| `NEXT_PUBLIC_SENTRY_DSN` | Client | Sentry DSN for error monitoring |
+| `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | Client | Plausible analytics domain |
+| `NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL` | Client | Custom Plausible script URL (self-hosted) |
 
 ---
 
@@ -370,6 +374,21 @@ The subscription keeper runs as a separate Docker service (`keeper` in
 `docker-compose.yml`, built from `infra/docker/Dockerfile.keeper`). It needs
 a funded wallet (`KEEPER_PRIVATE_KEY`) to pay gas for `processRenewal()` calls.
 On Base, gas is fractions of a cent, so the keeper wallet needs minimal ETH.
+The keeper exposes an HTTP health endpoint on port 8080 (`/health`) for Docker
+health checks and external monitoring.
+
+### Monitoring Stack
+
+- **Sentry** (`@sentry/nextjs`) — error tracking + performance monitoring.
+  Configured via `NEXT_PUBLIC_SENTRY_DSN`. Includes client, server, and edge
+  configs, instrumentation hook, and global error boundary. The `/monitoring`
+  tunnel route proxies browser events to avoid ad-blockers.
+- **Plausible Analytics** — privacy-focused, cookie-free page analytics.
+  Configured via `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`. Supports Plausible Cloud
+  (default) or self-hosted instances (`NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL`).
+- **Keeper health** — HTTP endpoint at `/health` (port 8080) returns JSON
+  with sweep stats, consecutive failures, and uptime. Docker health check
+  monitors this endpoint. Returns 503 after 5 consecutive sweep failures.
 
 ### Deployment Pitfalls — Lessons Learned
 

@@ -8,6 +8,7 @@ import { wagmiConfig } from '@/lib/wagmi'
 import { env } from '@/env'
 import { base, baseSepolia } from '@privy-io/chains'
 import { Header } from '@/components/Header'
+import { Analytics } from '@/components/Analytics'
 import './globals.css'
 
 const inter = Inter({
@@ -72,6 +73,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {env.NEXT_PUBLIC_PRIVY_APP_ID && <Header />}
           {children}
         </Providers>
+        <Analytics />
       </body>
     </html>
   )

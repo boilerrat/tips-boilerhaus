@@ -128,6 +128,8 @@ jobs:
             NEXT_PUBLIC_BASE_RPC_URL=${{ secrets.NEXT_PUBLIC_BASE_RPC_URL }}
             NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL=${{ secrets.NEXT_PUBLIC_BASE_SEPOLIA_RPC_URL }}
             NEXT_PUBLIC_PINATA_GATEWAY_URL=${{ secrets.NEXT_PUBLIC_PINATA_GATEWAY_URL }}
+            NEXT_PUBLIC_SENTRY_DSN=${{ secrets.NEXT_PUBLIC_SENTRY_DSN }}
+            NEXT_PUBLIC_PLAUSIBLE_DOMAIN=${{ secrets.NEXT_PUBLIC_PLAUSIBLE_DOMAIN }}
           # Layer cache via GitHub Actions cache
           cache-from: type=gha
           cache-to: type=gha,mode=max

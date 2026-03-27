@@ -44,6 +44,14 @@ const envSchema = z.object({
   // Coinbase Onramp — server-side only, for generating session tokens
   COINBASE_ONRAMP_API_KEY: z.string().min(1).optional(),
   COINBASE_ONRAMP_API_SECRET: z.string().min(1).optional(),
+
+  // Sentry error monitoring — public DSN (safe to expose client-side)
+  NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
+
+  // Analytics — Plausible domain (e.g. "tips.boilerhaus.org")
+  NEXT_PUBLIC_PLAUSIBLE_DOMAIN: z.string().min(1).optional(),
+  // Optional custom Plausible script URL for self-hosted instances
+  NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL: z.string().url().optional(),
 })
 
 const raw = {
@@ -61,6 +69,9 @@ const raw = {
   NEXT_PUBLIC_PINATA_GATEWAY_URL: process.env.NEXT_PUBLIC_PINATA_GATEWAY_URL,
   COINBASE_ONRAMP_API_KEY: process.env.COINBASE_ONRAMP_API_KEY,
   COINBASE_ONRAMP_API_SECRET: process.env.COINBASE_ONRAMP_API_SECRET,
+  NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+  NEXT_PUBLIC_PLAUSIBLE_DOMAIN: process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN,
+  NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL: process.env.NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL,
 }
 
 const result = envSchema.safeParse(raw)
@@ -85,6 +96,9 @@ export const env: z.infer<typeof envSchema> = result.success
       NEXT_PUBLIC_PINATA_GATEWAY_URL: undefined,
       COINBASE_ONRAMP_API_KEY: undefined,
       COINBASE_ONRAMP_API_SECRET: undefined,
+      NEXT_PUBLIC_SENTRY_DSN: undefined,
+      NEXT_PUBLIC_PLAUSIBLE_DOMAIN: undefined,
+      NEXT_PUBLIC_PLAUSIBLE_SCRIPT_URL: undefined,
     }
 
 export type Env = z.infer<typeof envSchema>
