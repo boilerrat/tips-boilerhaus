@@ -63,13 +63,6 @@ services:
       ENABLE_EMAIL_VERIFICATION: ${ENABLE_EMAIL_VERIFICATION:-false}
       TOTP_VAULT_KEY: ${TOTP_VAULT_KEY}
       MAILER_ADAPTER: ${MAILER_ADAPTER:-Bamboo.Mua}
-      MAILER_EMAIL: ${MAILER_EMAIL:-}
-      MAILER_NAME: ${MAILER_NAME:-}
-      SMTP_HOST_ADDR: ${SMTP_HOST_ADDR:-}
-      SMTP_HOST_PORT: ${SMTP_HOST_PORT:-}
-      SMTP_USER_NAME: ${SMTP_USER_NAME:-}
-      SMTP_USER_PWD: ${SMTP_USER_PWD:-}
-      SMTP_HOST_SSL_ENABLED: ${SMTP_HOST_SSL_ENABLED:-}
     healthcheck:
       test:
         ["CMD-SHELL", "wget --no-verbose --tries=1 -O - http://127.0.0.1:8000/api/system/health/ready || exit 1"]
