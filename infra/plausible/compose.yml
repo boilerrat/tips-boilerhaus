@@ -74,7 +74,6 @@ services:
       - traefik.enable=true
       - traefik.docker.network=dokploy-network
       - traefik.http.routers.plausible.rule=Host(`plausible.boilerhaus.org`)
-      - traefik.http.routers.plausible.middlewares=security-headers@file
       - traefik.http.routers.plausible.entrypoints=websecure
       - traefik.http.routers.plausible.tls=true
       - traefik.http.routers.plausible.tls.certresolver=letsencrypt
