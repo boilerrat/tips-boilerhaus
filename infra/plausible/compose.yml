@@ -77,8 +77,17 @@ services:
       timeout: 5s
       retries: 5
       start_period: 45s
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=dokploy-network
+      - traefik.http.routers.plausible.rule=Host(`plausible.boilerhaus.org`)
+      - traefik.http.routers.plausible.entrypoints=websecure
+      - traefik.http.routers.plausible.tls=true
+      - traefik.http.routers.plausible.tls.certresolver=letsencrypt
+      - traefik.http.services.plausible.loadbalancer.server.port=8000
     networks:
       - plausible_internal
+      - dokploy-network
 
 volumes:
   db-data:
@@ -88,3 +97,5 @@ volumes:
 
 networks:
   plausible_internal:
+  dokploy-network:
+    external: true
